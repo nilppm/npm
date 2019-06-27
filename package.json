@@ -1,0 +1,37 @@
+{
+  "name": "npm",
+  "version": "1.0.0",
+  "description": "The description of this project",
+  "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nelts/template.git"
+  },
+  "scripts": {
+    "dev": "nelts-server dev -m 1",
+    "build": "rm -rf dist/ && tsc -d",
+    "start": "nelts-server start",
+    "restart": "nelts-server restart",
+    "stop": "nelts-server stop"
+  },
+  "keywords": [
+    "template",
+    "nelts"
+  ],
+  "author": "cevio",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nelts/template/issues"
+  },
+  "homepage": "https://github.com/nelts/template#readme",
+  "dependencies": {
+    "@nelts/nelts": "^1.0.10",
+    "@nelts/process": "^1.0.7"
+  },
+  "devDependencies": {
+    "@nelts/cli": "^1.0.2",
+    "ts-node": "^8.3.0",
+    "typescript": "^3.5.2",
+    "pm2": "^3.5.1"
+  }
+}
