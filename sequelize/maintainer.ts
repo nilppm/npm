@@ -4,7 +4,6 @@ export default class MaintainerTableModel extends Model {
   public id: number;
   public account: string;
   public pid: number;
-  public ctime: Date;
 
   public static installer(sequelize: Sequelize) {
     MaintainerTableModel.init({

@@ -1,5 +1,6 @@
-import { Component, Context } from '@nelts/nelts';
-import { getSequelizeFieldValues } from '@nelts/orm';
+import { NPMContext } from '../index';
+import { Component } from '@nelts/nelts';
+import { Cacheable } from '@nelts/orm';
 
 interface VersionCompareTree {
   items?: {
@@ -8,9 +9,23 @@ interface VersionCompareTree {
   max: number,
 }
 
-export default class VersionService extends Component.Service {
-  constructor(ctx: Context) {
+export default class VersionService extends Component.Service<NPMContext> {
+  constructor(ctx: NPMContext) {
     super(ctx);
+  }
+
+  @Cacheable('/package/:pid(\\d+)/versions')
+  async getVersionCache(pid: number) {
+    const result = await this.getVersionsByPid(pid, 'id', 'name', 'ctime', 'package', 'rev');
+    const res: {[name: string]: any} = {};
+    result.forEach(ret => {
+      const chunk = JSON.parse(ret.package);
+      if (ret.name !== chunk.version) return;
+      chunk._created = ret.ctime;
+      chunk._rev = ret.rev;
+      res[ret.id] = chunk;
+    });
+    return res;
   }
 
   checkVersionAllow(version: string, versions: string[]) {
@@ -54,15 +69,31 @@ export default class VersionService extends Component.Service {
     }
   }
 
-  async getVersionsByPid(pid: number) {
-    const versions = <{ name: string }[]>getSequelizeFieldValues(await this.ctx.sequelize.cpm.version.findAll({
-      attributes: ['name'],
+  async getVersionsByPid(pid: number, ...args: string[]) {
+    return await this.ctx.dbo.version.findAll({
+      attributes: args.length > 0 ? args : ['name'],
       where: { pid }
-    }));
-    return versions.map(ver => ver.name);
+    });
   }
 
   async createNewVersion(options: object) {
-    return await this.ctx.sequelize.cpm.version.create(options);
+    return await this.ctx.dbo.version.create(options);
+  }
+
+  async getSingleVersionByRev(rev: string, ...attributes: string[]) {
+    const res = await this.ctx.dbo.version.findAll({
+      attributes: attributes.length > 0 ? attributes : ['id'],
+      where: { rev }
+    });
+    if (!res.length) return;
+    return res[0];
+  }
+
+  async updateVersion(id: number, data: object) {
+    return await this.ctx.dbo.version.update(data, {
+      where: {
+        id
+      }
+    });
   }
 }

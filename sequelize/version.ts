@@ -11,7 +11,7 @@ export default class VersionTableModel extends Model {
   public size: number;
   public package: string;
   public rev: string;
-
+  public ctime: Date;
   public static installer(sequelize: Sequelize) {
     VersionTableModel.init({
       id: {
@@ -35,6 +35,13 @@ export default class VersionTableModel extends Model {
       updatedAt: 'mtime',
       charset: 'utf8',
       collate: 'utf8_general_ci',
+      indexes: [
+        {
+          name: 'idx_rev',
+          unique: true,
+          fields: ['rev']
+        }
+      ],
     });
   }
 }

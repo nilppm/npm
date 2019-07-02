@@ -5,6 +5,8 @@ export default class PackageTableModel extends Model {
   public scope: string;
   public name: string;
   public pathname: string;
+  public ctime: Date;
+  public mtime: Date;
 
   public static installer(sequelize: Sequelize) {
     PackageTableModel.init({

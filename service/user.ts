@@ -1,5 +1,6 @@
-import { Component, Context, NELTS_CONFIGS } from '@nelts/nelts';
-import { Cacheable, CacheableInterface, getSequelizeFieldValues } from '@nelts/orm';
+import { NPMContext } from '../index';
+import { Component, NELTS_CONFIGS } from '@nelts/nelts';
+import { Cacheable, CacheableInterface } from '@nelts/orm';
 
 export interface UserInfo {
   account: string,
@@ -27,22 +28,22 @@ interface AddUserResponseData {
   rev: string,
 }
 
-export default class UserService extends Component.Service {
+export default class UserService extends Component.Service<NPMContext> {
   private configs: NELTS_CONFIGS;
-  constructor(ctx: Context) {
+  constructor(ctx: NPMContext) {
     super(ctx);
     this.configs = ctx.app.configs;
   }
 
   @Cacheable('/user/info/:account')
   async userCache(account: string): Promise<any> {
-    const users: object[] = getSequelizeFieldValues(await this.ctx.sequelize.cpm.user.findAll({
+    const users: object[] = await this.ctx.dbo.user.findAll({
       where: {
         account
       }
-    }));
+    });
     if (users.length) {
-      const userinfo: any = users[0];
+      const userinfo: any = (<{dataValues: any}>users[0]).dataValues;
       userinfo.scopes = JSON.parse(userinfo.scopes);
       userinfo.extra = JSON.parse(userinfo.extra);
       const result: UserInfo = userinfo;
@@ -54,9 +55,15 @@ export default class UserService extends Component.Service {
     const cache: CacheableInterface = await this.userCache(account);
     let user = await cache.get({ account });
     if (!user) {
-      if (typeof this.configs.user !== 'function') throw new Error('please set user fetching function first.');
-      const userinfo = await this.configs.user(account);
-      await this.ctx.sequelize.cpm.user.create({
+      const userinfo = typeof this.configs.user === 'function' ? await this.configs.user(account) : {
+        account,
+        name: account,
+        email: this.configs.defaultEmailSuffix ? account + this.configs.defaultEmailSuffix : null,
+        avatar: 'https://i.loli.net/2017/08/21/599a521472424.jpg',
+        scopes: ['@' + account],
+        extra: {}
+      };
+      await this.ctx.dbo.user.create({
         account: userinfo.account,
         name: userinfo.name,
         email: userinfo.email,
@@ -76,6 +83,27 @@ export default class UserService extends Component.Service {
       scopes: user.scopes,
       extra: user.extra,
     };
+  }
+
+  async getUserByAccount(account: string) {
+    return await this.ctx.dbo.user.findAll({
+      attributes: ['id'],
+      where: {
+        account
+      }
+    })
+  }
+
+  async updateUserByAccount(data: {[name: string]: any}, account: string) {
+    return await this.ctx.dbo.user.update(data, {
+      where: {
+        account
+      }
+    });
+  }
+
+  async createUser(data: {[name: string]: any}) {
+    return await this.ctx.dbo.user.create(data);
   }
 
   async addUser(data: AddUserRequestData): Promise<AddUserResponseData> {
@@ -103,28 +131,19 @@ export default class UserService extends Component.Service {
       });
     }
 
-    const findResults = await this.ctx.sequelize.cpm.user.findAll({
-      attributes: ['id'],
-      where: {
-        account: userinfo.account
-      }
-    });
+    const findResults = await this.getUserByAccount(userinfo.account).catch(console.log);
 
-    if (findResults.length) {
-      await this.ctx.sequelize.cpm.user.update({
+    if (findResults && findResults.length) {
+      await this.updateUserByAccount({
         name: userinfo.name,
         email: userinfo.email,
         avatar: userinfo.avatar,
         scopes: JSON.stringify(userinfo.scopes),
         extra: JSON.stringify(userinfo.extra),
         mtime: new Date(data.date),
-      }, {
-        where: {
-          account: userinfo.account
-        }
-      });
+      }, userinfo.account);
     } else {
-      await this.ctx.sequelize.cpm.user.create({
+      await this.createUser({
         account: userinfo.account,
         name: userinfo.name,
         email: userinfo.email,

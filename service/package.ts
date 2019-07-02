@@ -1,23 +1,44 @@
-import { Component, Context, NELTS_CONFIGS } from '@nelts/nelts';
+import { NPMContext } from '../index';
+import { Component, NELTS_CONFIGS } from '@nelts/nelts';
 import * as request from 'request';
-import { Cacheable, CacheableInterface, getSequelizeFieldValues } from '@nelts/orm';
+import { Cacheable, CacheableInterface } from '@nelts/orm';
 import * as path from 'path';
 import * as crypto from 'crypto';
 import * as uuid from 'uuid/v4';
 import * as fse from 'fs-extra';
 import * as fs from 'fs';
-import { ModelAttributeColumnOptions } from 'sequelize';
 
-export default class PackageService extends Component.Service {
+export default class PackageService extends Component.Service<NPMContext> {
   private configs: NELTS_CONFIGS;
-  constructor(ctx: Context) {
+  constructor(ctx: NPMContext) {
     super(ctx);
     this.configs = ctx.app.configs;
   }
 
-  @Cacheable('/package/:pathname')
-  async PackageCache(pathname: string): Promise<any> {
-    return {a:1};
+  // @Cacheable('/package/:pathname/:version')
+  async updatePackageCache(pid: number) {
+    const TagServer = new this.service.TagService(this.ctx);
+    const VersionService = new this.service.VersionService(this.ctx);
+    const MaintainerService = new this.service.MaintainerService(this.ctx);
+
+    await MaintainerService.getMaintainersCache(pid).set({ pid });
+    await TagServer.getTagsCache(pid).set({ pid });
+    await VersionService.getVersionCache(pid).set({ pid });
+
+    const pack = await this.ctx.dbo.package.findAll({
+      attributes: ['pathname', 'ctime', 'mtime'],
+      where: {
+        id: pid
+      }
+    });
+
+    const pathname = pack[0].pathname;
+    const ctime = pack[0].ctime;
+    const mtime = pack[0].mtime;
+    await this.ctx.redis.set(':package:' + pathname, {
+      id: pid,
+      ctime, mtime
+    });
   }
 
   async getUri(url: string, name: string, version: string): Promise<string> {
@@ -44,15 +65,73 @@ export default class PackageService extends Component.Service {
     throw new Error('not found');
   }
 
-  async getPackageInfo(pkg: { pathname: string, version?: string }) {
-    // const cache: CacheableInterface = await this.PackageCache(pathname);
-    // const result = await cache.get({ pathname });
-    // if (result) return result;
-    return await this.getRemotePackageInformation(pkg.pathname, pkg.version);
+  async getLocalPackageByPid(pid: number, ctime: Date, mtime: Date, version?: string) {
+    const TagServer = new this.service.TagService(this.ctx);
+    const VersionService = new this.service.VersionService(this.ctx);
+    const MaintainerService = new this.service.MaintainerService(this.ctx);
+    const UserService = new this.service.UserService(this.ctx);
+    const [maintainers, tags, versions] = await Promise.all([
+      MaintainerService.getMaintainersCache(pid).get({ pid }),
+      TagServer.getTagsCache(pid).get({ pid }),
+      VersionService.getVersionCache(pid).get({ pid })
+    ]);
+    if (
+      !maintainers || !maintainers.length || 
+      !tags || !tags.latest ||
+      !versions || !Object.keys(versions).length
+    ) throw new Error('invaild cache data with package');
+
+    let chunk: any;
+    const distTags: {[name: string]: string} = {};
+    const chunkVersions: {[version: string]: any} = {};
+    const times: {[version: string]: string} = {};
+    if (!version) {
+      if (!versions[tags.latest]) throw new Error('cannot find the latest version');
+      chunk = versions[tags.latest];
+    } else {
+      for (const i in versions) {
+        if (versions[i].version === version) {
+          chunk = versions[i];
+          break;
+        }
+      }
+    }
+    if (!chunk) throw new Error('invaild version data in cache');
+    chunk = JSON.parse(JSON.stringify(chunk));
+    chunk.maintainers = (await Promise.all(maintainers.map(
+      (maintainer: string) => UserService.userCache(maintainer).get({ account: maintainer })))
+    ).map((user: {account: string, email: string}) => {
+      return {
+        name: user.account,
+        email: user.email,
+      }
+    });
+    for (const i in tags) distTags[i] = versions[tags[i]].version;
+    chunk['dist-tags'] = distTags;
+    for (const i in versions) {
+      times[versions[i].version] = versions[i]._created;
+      chunkVersions[versions[i].version] = versions[i];
+    }
+    chunk.versions = chunkVersions;
+    chunk.time = times;
+    chunk.time.created = ctime;
+    chunk.time.modified = mtime;
+    return chunk;
   }
 
-  async updatePackageCache(pid: number) {
+  async getPackageInfo(pkg: { pathname: string, version?: string }) {
+    const pck = await this.ctx.redis.get(':package:' + pkg.pathname);
+    if (pck) {
+      return await this.getLocalPackageByPid(pck.id, new Date(pck.ctime), new Date(pck.mtime), pkg.version);
+    }
 
+    const pack = await this.getSinglePackageByPathname(pkg.pathname, 'ctime', 'mtime');
+    if (pack) {
+      await this.updatePackageCache(pack.id);
+      return await this.getLocalPackageByPid(pack.id, pack.ctime, pack.mtime, pkg.version);
+    }
+    
+    return await this.getRemotePackageInformation(pkg.pathname, pkg.version);
   }
 
   /**
@@ -60,7 +139,7 @@ export default class PackageService extends Component.Service {
    * @param tarballBuffer {Buffer} 数据源Buffer
    * @returns string
    */
-  async createShasumCode(tarballBuffer: Buffer) {
+  createShasumCode(tarballBuffer: Buffer) {
     const shasum = crypto.createHash('sha1');
     shasum.update(tarballBuffer);
     return shasum.digest('hex');
@@ -85,11 +164,13 @@ export default class PackageService extends Component.Service {
    * @param attributes {...ModelAttributeColumnOptions[]} 字段数组
    * @returns Promise<Sequelize.Model>
    */
-  async getSinglePackageByPathname(pathname: string, ...attributes: ModelAttributeColumnOptions[]) {
-    return await this.ctx.sequelize.cpm.package.findAll({
-      attributes: attributes || ['id'],
+  async getSinglePackageByPathname(pathname: string, ...attributes: string[]) {
+    const res = await this.ctx.dbo.package.findAll({
+      attributes: attributes.length > 0 ? attributes : ['id'],
       where: { pathname }
     });
+    if (!res.length) return;
+    return res[0];
   }
 
   /**
@@ -100,7 +181,7 @@ export default class PackageService extends Component.Service {
    * @returns Promise<Sequelize.Model>
    */
   async createNewPackage(scope: string, name: string, pathname: string) {
-    return await this.ctx.sequelize.cpm.package.create({
+    return await this.ctx.dbo.package.create({
       scope, name, pathname,
     });
   }
@@ -159,15 +240,15 @@ export default class PackageService extends Component.Service {
 
     let packageId, firstTime = false;
     const packages = await this.getSinglePackageByPathname(name);
-    if (!packages.length) {
+    if (!packages) {
       const packageModel = await this.createNewPackage(scope, alias, name);
       packageId = packageModel.id;
       firstTime = true;
     } else {
-      packageId = packages[0].id;
+      packageId = packages.id;
     }
 
-    const sysMaintainers = MaintainerService.getMaintainersByPid(packageId);
+    const sysMaintainers = await MaintainerService.getMaintainersByPid(packageId);
 
     if (!firstTime) {
       if (!MaintainerService.checkMaintainerAllow(account, sysMaintainers)) {
@@ -177,7 +258,8 @@ export default class PackageService extends Component.Service {
       await MaintainerService.createNewMaintainer(account, packageId);
     }
 
-    if (!VersionService.checkVersionAllow(version, await VersionService.getVersionsByPid(packageId))) {
+    const _versions: { name: string }[] = await VersionService.getVersionsByPid(packageId);
+    if (!VersionService.checkVersionAllow(version, _versions.map(ver => ver.name))) {
       throw new Error('forbidden: cannot publish pre-existing version: ' + version);
     }
     
@@ -193,7 +275,7 @@ export default class PackageService extends Component.Service {
       shasum,
       tarball: filename,
       size: attachment.length,
-      package: encodeURIComponent(JSON.stringify(pkg.versions[version])),
+      package: JSON.stringify(pkg.versions[version]),
       rev: uuid()
     });
 
@@ -219,7 +301,7 @@ export default class PackageService extends Component.Service {
   }
 
   async updateModifiedTime(pid: number) {
-    return await this.ctx.sequelize.cpm.package.update({
+    return await this.ctx.dbo.package.update({
       mtime: new Date(),
     }, {
       where: {

@@ -1,4 +1,5 @@
-import { Component, Decorator, Plugin, Context, Scope, Extra } from '@nelts/nelts';
+import { NPMContext } from '../index';
+import { Component, Decorator, WorkerPlugin, Scope, Extra } from '@nelts/nelts';
 const Controller = Decorator.Controller;
 
 /**
@@ -12,37 +13,37 @@ const Controller = Decorator.Controller;
  */
 
 // Use scope function
-export default Scope((app: Plugin) => {
+export default Scope<WorkerPlugin>(app => {
   @Controller.Prefix()
   class IndexController extends Component.Controller {
-    constructor(app: Plugin) {
+    constructor(app: WorkerPlugin) {
       super(app);
     }
 
     @Controller.Get('/@:scope/:pkgname/:version')
     @Controller.Request.Static.Filter(app.middleware.decodePackageWithScopePkgnameAndVersion)
-    async GetPackageInformationWithScopePkgnameAndVersion(ctx: Context) {
+    async GetPackageInformationWithScopePkgnameAndVersion(ctx: NPMContext) {
       const service = new this.service.PackageService(ctx);
       ctx.body = await service.getPackageInfo(ctx.pkg);
     }
 
     @Controller.Get('/@:scope/:pkgname')
     @Controller.Request.Static.Filter(app.middleware.decodePackageWithScopeAndPkgname)
-    async GetPackageInformationWithScopeAndPkgname(ctx: Context) {
+    async GetPackageInformationWithScopeAndPkgname(ctx: NPMContext) {
       const service = new this.service.PackageService(ctx);
       ctx.body = await service.getPackageInfo(ctx.pkg);
     }
 
     @Controller.Get('/@:scope')
     @Controller.Request.Static.Filter(app.middleware.decodePackageWithScope)
-    async GetPackageInformationWithScope(ctx: Context) {
+    async GetPackageInformationWithScope(ctx: NPMContext) {
       const service = new this.service.PackageService(ctx);
       ctx.body = await service.getPackageInfo(ctx.pkg);
     }
 
     @Controller.Get('/:pkgname/:version')
     @Controller.Request.Static.Filter(app.middleware.decodePackageWithPkgnameAndVersion)
-    async GetPackageInformationWithPkgnameAndVersion(ctx: Context) {
+    async GetPackageInformationWithPkgnameAndVersion(ctx: NPMContext) {
       const service = new this.service.PackageService(ctx);
       ctx.body = await service.getPackageInfo(ctx.pkg);
     }
@@ -50,14 +51,14 @@ export default Scope((app: Plugin) => {
 
     @Controller.Get('/:pkgname')
     @Controller.Request.Static.Filter(app.middleware.decodePackageWithPkgname)
-    async GetPackageInformationWithPkgname(ctx: Context) {
+    async GetPackageInformationWithPkgname(ctx: NPMContext) {
       const service = new this.service.PackageService(ctx);
       ctx.body = await service.getPackageInfo(ctx.pkg);
     }
 
     @Controller.Post('/-/v:v(\\d+)/login')
-    @Controller.Request.Dynamic.Loader(Extra.Body<Context>({ isapi: true }))
-    async PrepareToLogin(ctx: Context) {
+    @Controller.Request.Dynamic.Loader(Extra.Body<NPMContext>({ isapi: true }))
+    async PrepareToLogin(ctx: NPMContext) {
       const v = Number(ctx.params.v);
       await ctx.app.root.broadcast('NpmPrepareLogin', ctx, v);
       ctx.status = 422;
@@ -65,20 +66,47 @@ export default Scope((app: Plugin) => {
 
     @Controller.Put('/@:scope')
     @Controller.Request.Static.Filter(app.middleware.decodePackageWithScope)
-    @Controller.Request.Dynamic.Loader(Extra.Body<Context>({ isapi: true }))
+    @Controller.Request.Dynamic.Loader(Extra.Body<NPMContext>({ isapi: true }))
     @Controller.Middleware(app.middleware.UserLoginMiddleware)
-    async putPackageWithScope(ctx: Context) {
-      console.log(ctx.request.headers, ctx.pkg, ctx.request.body)
-      ctx.body = ctx.pkg;
+    async putPackageWithScope(ctx: NPMContext) {
+      const service = new this.service.PackageService(ctx);
+      await service.publish(ctx.account, ctx.request.body)
+      ctx.body = {
+        ok: true,
+      };
     }
 
     @Controller.Put('/@:scope/:pkgname')
     @Controller.Request.Static.Filter(app.middleware.decodePackageWithScopeAndPkgname)
-    @Controller.Request.Dynamic.Loader(Extra.Body<Context>({ isapi: true }))
+    @Controller.Request.Dynamic.Loader(Extra.Body<NPMContext>({ isapi: true }))
     @Controller.Middleware(app.middleware.UserLoginMiddleware)
-    async putPackageWithScopeAndPkgname(ctx: Context) {
+    async putPackageWithScopeAndPkgname(ctx: NPMContext) {
       const service = new this.service.PackageService(ctx);
       ctx.body = await service.publish(ctx.account, ctx.request.body);
+    }
+
+    @Controller.Put('/@:scope/-rev/:rev')
+    @Controller.Request.Static.Filter(app.middleware.decodePackageWithScope)
+    @Controller.Request.Dynamic.Loader(Extra.Body<NPMContext>({ isapi: true }))
+    @Controller.Middleware(app.middleware.UserLoginMiddleware)
+    async npmAddOwnerUserWithScope(ctx: NPMContext) {
+      const service = new this.service.MaintainerService(ctx);
+      await service.addOwner(ctx.params.rev, ctx.pkg.pathname, ctx.request.body.maintainers);
+      ctx.body = {
+        ok: true
+      }
+    }
+
+    @Controller.Put('/@:scope/:pkgname/-rev/:rev')
+    @Controller.Request.Static.Filter(app.middleware.decodePackageWithScopeAndPkgname)
+    @Controller.Request.Dynamic.Loader(Extra.Body<NPMContext>({ isapi: true }))
+    @Controller.Middleware(app.middleware.UserLoginMiddleware)
+    async npmAddOwnerUserWithScopeAndPkgname(ctx: NPMContext) {
+      const service = new this.service.MaintainerService(ctx);
+      await service.addOwner(ctx.params.rev, ctx.pkg.pathname, ctx.request.body.maintainers);
+      ctx.body = {
+        ok: true
+      }
     }
   }
 
