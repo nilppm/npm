@@ -8,5 +8,5 @@ export default function Start() {
   const _pkgfile = path.resolve(process.cwd(), 'package.json');
   const _pkg = fs.existsSync(_pkgfile) ? require(_pkgfile) : pkg;
   const args: string[] = [ 'restart', _pkg.name ];
-  exec('node_modules/.bin/pm2', args, { env: 'production' }).then(() => process.exit(0));
+  exec('pm2', args, { env: 'production' }).then(() => process.exit(0));
 }

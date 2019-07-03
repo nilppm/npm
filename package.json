@@ -1,6 +1,6 @@
 {
   "name": "@nilppm/npm",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Node's internal lightweight private package manager",
   "main": "dist/index.js",
   "bin": {
@@ -40,7 +40,6 @@
   },
   "devDependencies": {
     "@nelts/cli": "^1.0.4",
-    "pm2": "^3.5.1",
     "ts-node": "^8.3.0",
     "typescript": "^3.5.2"
   },

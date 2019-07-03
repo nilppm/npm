@@ -27,5 +27,5 @@ export default function Start(options: DevOptions) {
   if (options.max) args.push(`--max=${options.max}`);
   if (options.port) args.push(`--port=${options.port}`);
   
-  exec('node_modules/.bin/pm2', args, { env: 'production' }).then(() => process.exit(0));
+  exec('pm2', args, { env: 'production' }).then(() => process.exit(0));
 }
