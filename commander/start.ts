@@ -11,7 +11,8 @@ export default function Start(options: DevOptions) {
   const pkg = require(path.resolve(__dirname, '../../package.json'));
   const _pkgfile = path.resolve(process.cwd(), 'package.json');
   const _pkg = fs.existsSync(_pkgfile) ? require(_pkgfile) : pkg;
-  const runtime_path = path.resolve(__dirname, '../../node_modules/@nelts/process/dist/runtime.js');
+  const processpath = require.resolve('@nelts/process');
+  const runtime_path = path.resolve(path.dirname(processpath), 'runtime.js');
   const config_path = path.resolve(__dirname, '../nelts.config');
   const args: string[] = [
     'start',

@@ -5,7 +5,7 @@ import Start from './commander/start';
 import ReStart from './commander/restart';
 import Stop from './commander/stop';
 
-const pkg = require('../../package.json');
+const pkg = require('../package.json');
 program.version(pkg.version, '-v, --version');
 
 program.command('start')

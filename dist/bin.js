@@ -5,7 +5,7 @@ const program = require("commander");
 const start_1 = require("./commander/start");
 const restart_1 = require("./commander/restart");
 const stop_1 = require("./commander/stop");
-const pkg = require('../../package.json');
+const pkg = require('../package.json');
 program.version(pkg.version, '-v, --version');
 program.command('start')
     .description('run server with pm2, env = production')
