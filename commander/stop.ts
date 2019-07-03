@@ -8,5 +8,5 @@ export default function Stop() {
   const _pkgfile = path.resolve(process.cwd(), 'package.json');
   const _pkg = fs.existsSync(_pkgfile) ? require(_pkgfile) : pkg;
   const args: string[] = [ 'stop', _pkg.name ];
-  exec('pm2', args, { env: 'production' }).then(() => process.exit(0));
+  exec('node_modules/.bin/pm2', args, { env: 'production' }).then(() => process.exit(0));
 }
