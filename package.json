@@ -1,6 +1,6 @@
 {
   "name": "@nilppm/npm",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Node's internal lightweight private package manager",
   "main": "dist/index.js",
   "bin": {
