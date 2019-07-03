@@ -1,6 +1,13 @@
+import * as fs from 'fs';
+import * as path from 'path';
+import * as os from 'os';
 import { NPMContext } from '../index';
-import { Component, Decorator, WorkerPlugin, Scope, Extra } from '@nelts/nelts';
+import Total from '../lib/total';
+import { Component, Decorator, WorkerPlugin, Scope, Extra, ContextError } from '@nelts/nelts';
 const Controller = Decorator.Controller;
+
+let CPM_CACHE: {[name: string]: any} = {};
+let CPM_TIME = 0;
 
 /**
  * package uri mode
@@ -18,6 +25,45 @@ export default Scope<WorkerPlugin>(app => {
   class IndexController extends Component.Controller {
     constructor(app: WorkerPlugin) {
       super(app);
+    }
+
+    @Controller.Get('/metadata')
+    async metadata(ctx: NPMContext) {
+      const project = require('../package.json');
+      if (Date.now() - CPM_TIME > 10 * 60 * 1000) {
+        CPM_CACHE = await Total(ctx);
+        CPM_TIME = Date.now();
+      }
+      CPM_CACHE.version = project.version;
+      CPM_CACHE.description = project.description;
+      CPM_CACHE.machine = {
+        cpu: {
+          arch: os.arch(),
+          info: os.cpus()
+        },
+        freemem: os.freemem(),
+        hostname: os.hostname(),
+        networkInterfaces: os.networkInterfaces(),
+        platform: os.platform(),
+        release: os.release(),
+        totalmem: os.totalmem(),
+        type: os.type(),
+        uptime: os.uptime(),
+        loadavg: os.loadavg()
+      }
+      ctx.body = CPM_CACHE;
+    }
+
+    @Controller.Get('/download/@:scope/:pkgname')
+    @Controller.Request.Static.Filter(app.middleware.decodePackageWithScopeAndPkgname)
+    async download(ctx: NPMContext) {
+      const file = path.resolve(app.configs.nfs, ctx.pkg.pathname);
+      if (!fs.existsSync(file)) {
+        const err: ContextError = new Error('cannot find the package');
+        err.status = 404;
+        throw err;
+      }
+      ctx.body = fs.createReadStream(file);
     }
 
     @Controller.Get('/@:scope/:pkgname/:version')

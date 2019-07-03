@@ -1,7 +1,7 @@
 {
   "name": "@nilppm/npm",
   "version": "1.0.0",
-  "description": "The description of this project",
+  "description": "Node's internal lightweight private package manager",
   "main": "dist/index.js",
   "repository": {
     "type": "git",
