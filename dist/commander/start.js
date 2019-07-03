@@ -17,7 +17,7 @@ function Start(options) {
         '--',
         '--module=@nelts/nelts'
     ];
-    args.push(`--base=${__dirname}`);
+    args.push(`--base=${path.resolve(__dirname, '../../')}`);
     args.push(`--config=${config_path}`);
     if (options.max)
         args.push(`--max=${options.max}`);

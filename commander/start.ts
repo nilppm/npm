@@ -22,7 +22,7 @@ export default function Start(options: DevOptions) {
     '--module=@nelts/nelts'
   ];
 
-  args.push(`--base=${__dirname}`);
+  args.push(`--base=${path.resolve(__dirname, '../../')}`);
   args.push(`--config=${config_path}`);
   if (options.max) args.push(`--max=${options.max}`);
   if (options.port) args.push(`--port=${options.port}`);
