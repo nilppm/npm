@@ -84,12 +84,12 @@ $ npm i -g pm2
 module.exports = {
   // sequelize配置参数请参考 http://docs.sequelizejs.com/manual/dialects.html
   sequelize: {
-    database: 'cpm',
-    username: 'shenyj',
-    password: '!2!34ffh!rfRg89_',
+    database: '',
+    username: '',
+    password: '',
     options: {
       dialect: 'mysql',
-      host: '192.168.2.181',
+      host: '',
       pool: {
         max: 10,
         min: 3
@@ -97,23 +97,25 @@ module.exports = {
     }
   },
   // 需要redis支持来缓存数据
-  redis: '192.168.2.208:6379',
+  redis: '192.168.2.xxx:6379',
   // 本服务对外暴露绑定的域名，注意：需要带上http://
-  registryHost: 'http://127.0.0.1:8080',
+  registryHost: 'http://127.0.0.1:9000',
   // NPM允许上传的私有scope数组
   scopes: ['@html5', '@node'],
   // 当不指定用户体系的时候，我们可以直接指定邮箱后缀来生成用户
   defaultEmailSuffix: '@example.com',
   // 管理员账户足
-  admins: ['shenyunjie'],
+  admins: ['anyone'],
+
   // 当我们使用自定义用户体系的时候，
   // 我们需要提供一个获取用户信息的接口
   // 这个不是必须，是可选参数函数。
-  async getUserInfo(account) {},
+  // async getUserInfo(account) {},
+  
   // 当我们使用自定义用户体系的时候，
   // 我们需要提供一个验证用户是否为有效用户的接口
   // 这个不是必须，是可选参数函数。
-  async userLogin(account, password, currentdate){},
+  // async userLogin(account, password, currentdate){},
 }
 ```
 
@@ -129,6 +131,8 @@ module.exports = {
   "extra": {} // 用户额外数据
 }
 ```
+
+`sequelize` 不局限使用mysql，所以只要`sequelize`支持的数据库，我们都可以使用。
 
 ## 第六步
 
