@@ -11,11 +11,9 @@ class TagTableModel extends sequelize_1.Model {
             },
             name: {
                 type: sequelize_1.DataTypes.STRING(100),
-                unique: 'uq_pid_name',
             },
             pid: {
                 type: sequelize_1.DataTypes.INTEGER,
-                unique: 'uq_pid_name',
             },
             vid: sequelize_1.DataTypes.INTEGER,
         }, {

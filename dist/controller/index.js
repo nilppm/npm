@@ -9,12 +9,52 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const fs = require("fs");
+const path = require("path");
+const os = require("os");
+const total_1 = require("../lib/total");
 const nelts_1 = require("@nelts/nelts");
 const Controller = nelts_1.Decorator.Controller;
+let CPM_CACHE = {};
+let CPM_TIME = 0;
 exports.default = nelts_1.Scope(app => {
     let IndexController = class IndexController extends nelts_1.Component.Controller {
         constructor(app) {
             super(app);
+        }
+        async metadata(ctx) {
+            const project = require('../package.json');
+            if (Date.now() - CPM_TIME > 10 * 60 * 1000) {
+                CPM_CACHE = await total_1.default(ctx);
+                CPM_TIME = Date.now();
+            }
+            CPM_CACHE.version = project.version;
+            CPM_CACHE.description = project.description;
+            CPM_CACHE.machine = {
+                cpu: {
+                    arch: os.arch(),
+                    info: os.cpus()
+                },
+                freemem: os.freemem(),
+                hostname: os.hostname(),
+                networkInterfaces: os.networkInterfaces(),
+                platform: os.platform(),
+                release: os.release(),
+                totalmem: os.totalmem(),
+                type: os.type(),
+                uptime: os.uptime(),
+                loadavg: os.loadavg()
+            };
+            ctx.body = CPM_CACHE;
+        }
+        async download(ctx) {
+            const file = path.resolve(app.configs.nfs, ctx.pkg.pathname);
+            if (!fs.existsSync(file)) {
+                const err = new Error('cannot find the package');
+                err.status = 404;
+                throw err;
+            }
+            ctx.body = fs.createReadStream(file);
         }
         async GetPackageInformationWithScopePkgnameAndVersion(ctx) {
             const service = new this.service.PackageService(ctx);
@@ -43,14 +83,25 @@ exports.default = nelts_1.Scope(app => {
         }
         async putPackageWithScope(ctx) {
             const service = new this.service.PackageService(ctx);
-            await service.publish(ctx.account, ctx.request.body);
-            ctx.body = {
-                ok: true,
-            };
+            if (ctx.request.body._attachments) {
+                await service.publish(ctx.account, ctx.request.body);
+            }
+            else {
+                await service.updatPackage(ctx.request.body);
+            }
+            ctx.body = { ok: true };
         }
         async putPackageWithScopeAndPkgname(ctx) {
+            const pkg = ctx.request.body;
+            const version = pkg.version;
             const service = new this.service.PackageService(ctx);
-            ctx.body = await service.publish(ctx.account, ctx.request.body);
+            if (pkg._attachments) {
+                await service.publish(ctx.account, ctx.request.body);
+            }
+            else if (pkg.versions && pkg.versions[version].deprecated) {
+                await service.deprecate(pkg.name, version, pkg.versions[version].deprecated);
+            }
+            ctx.body = { ok: true };
         }
         async npmAddOwnerUserWithScope(ctx) {
             const service = new this.service.MaintainerService(ctx);
@@ -66,7 +117,32 @@ exports.default = nelts_1.Scope(app => {
                 ok: true
             };
         }
+        async unPublishWithLocal(ctx) {
+            const service = new this.service.PackageService(ctx);
+            ctx.body = await service.unPublish(ctx.pkg.pathname, ctx.params.rev);
+        }
+        async unPublishWithScope(ctx) {
+            const service = new this.service.PackageService(ctx);
+            ctx.body = await service.unPublish(ctx.pkg.pathname, ctx.params.rev);
+        }
+        async unPublishWithScopeAndName(ctx) {
+            const service = new this.service.PackageService(ctx);
+            ctx.body = await service.unPublish(ctx.pkg.pathname, ctx.params.rev);
+        }
     };
+    __decorate([
+        Controller.Get('/metadata'),
+        __metadata("design:type", Function),
+        __metadata("design:paramtypes", [Object]),
+        __metadata("design:returntype", Promise)
+    ], IndexController.prototype, "metadata", null);
+    __decorate([
+        Controller.Get('/download/@:scope/:pkgname'),
+        Controller.Request.Static.Filter(app.middleware.decodePackageWithScopeAndPkgname),
+        __metadata("design:type", Function),
+        __metadata("design:paramtypes", [Object]),
+        __metadata("design:returntype", Promise)
+    ], IndexController.prototype, "download", null);
     __decorate([
         Controller.Get('/@:scope/:pkgname/:version'),
         Controller.Request.Static.Filter(app.middleware.decodePackageWithScopePkgnameAndVersion),
@@ -145,6 +221,30 @@ exports.default = nelts_1.Scope(app => {
         __metadata("design:paramtypes", [Object]),
         __metadata("design:returntype", Promise)
     ], IndexController.prototype, "npmAddOwnerUserWithScopeAndPkgname", null);
+    __decorate([
+        Controller.Delete('/download/@:scope/:pkgname/-rev/:rev'),
+        Controller.Request.Static.Filter(app.middleware.decodePackageWithScopeAndPkgname),
+        Controller.Middleware(app.middleware.UserLoginMiddleware),
+        __metadata("design:type", Function),
+        __metadata("design:paramtypes", [Object]),
+        __metadata("design:returntype", Promise)
+    ], IndexController.prototype, "unPublishWithLocal", null);
+    __decorate([
+        Controller.Delete('/@:scope/-rev/:rev'),
+        Controller.Request.Static.Filter(app.middleware.decodePackageWithScope),
+        Controller.Middleware(app.middleware.UserLoginMiddleware),
+        __metadata("design:type", Function),
+        __metadata("design:paramtypes", [Object]),
+        __metadata("design:returntype", Promise)
+    ], IndexController.prototype, "unPublishWithScope", null);
+    __decorate([
+        Controller.Delete('/@:scope/:pkgname/-rev/:rev'),
+        Controller.Request.Static.Filter(app.middleware.decodePackageWithScopeAndPkgname),
+        Controller.Middleware(app.middleware.UserLoginMiddleware),
+        __metadata("design:type", Function),
+        __metadata("design:paramtypes", [Object]),
+        __metadata("design:returntype", Promise)
+    ], IndexController.prototype, "unPublishWithScopeAndName", null);
     IndexController = __decorate([
         Controller.Prefix(),
         __metadata("design:paramtypes", [nelts_1.WorkerPlugin])

@@ -30,6 +30,11 @@ class VersionTableModel extends sequelize_1.Model {
                     name: 'idx_rev',
                     unique: true,
                     fields: ['rev']
+                },
+                {
+                    name: 'uq_pid_name',
+                    unique: true,
+                    fields: ['pid', 'name']
                 }
             ],
         });

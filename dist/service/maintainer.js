@@ -17,11 +17,18 @@ class MaintainerService extends nelts_1.Component.Service {
         super(ctx);
         this.configs = ctx.app.configs;
     }
+    async removeAllByPid(pid) {
+        return await this.ctx.dbo.maintainer.destroy({
+            where: { pid }
+        });
+    }
     async getMaintainersCache(pid) {
         const result = await this.getMaintainersByPid(pid);
         return result.map(res => res.account);
     }
     checkMaintainerAllow(account, maintainers) {
+        if (!account)
+            throw new Error('you must login first.');
         if (this.configs.admins) {
             const admins = Array.isArray(this.configs.admins) ? this.configs.admins : [this.configs.admins];
             if (admins.indexOf(account) > -1)

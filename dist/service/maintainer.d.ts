@@ -8,6 +8,7 @@ declare type MaintainerData = {
 export default class MaintainerService extends Component.Service<NPMContext> {
     private configs;
     constructor(ctx: NPMContext);
+    removeAllByPid(pid: number): Promise<number>;
     getMaintainersCache(pid: number): Promise<any>;
     checkMaintainerAllow(account: string, maintainers: MaintainerData[]): boolean;
     addOwner(rev: string, pathname: string, maintainers: MaintainerData[]): Promise<void>;
