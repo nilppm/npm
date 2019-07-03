@@ -48,6 +48,7 @@ $ npm init
 
 ```bash
 $ npm i @nilppm/npm
+$ npm i -g pm2
 ```
 
 ## 第四步
