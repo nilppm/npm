@@ -58,10 +58,24 @@ export default Scope<WorkerPlugin>(app => {
     @Controller.Request.Static.Filter(app.middleware.decodePackageWithScopeAndPkgname)
     async download(ctx: NPMContext) {
       const file = path.resolve(app.configs.nfs, ctx.pkg.pathname);
+      if (!file.endsWith('.tgz')) throw new Error('invaild package suffix extion.');
       if (!fs.existsSync(file)) {
         const err: ContextError = new Error('cannot find the package');
         err.status = 404;
         throw err;
+      }
+      if (ctx.app.configs.statistics) {
+        const i = ctx.pkg.pathname.lastIndexOf('-');
+        const str = ctx.pkg.pathname.substring(i + 1);
+        const pathname = ctx.pkg.pathname.substring(0, i);
+        const j = str.lastIndexOf('.tgz');
+        const version = str.substring(0, j);
+        if (/^\d+\.\d+\.\d+$/.test(version)) {
+          ctx.dbo.statistics.create({
+            pathname,
+            version,
+          });
+        }
       }
       ctx.body = fs.createReadStream(file);
     }

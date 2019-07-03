@@ -40,4 +40,5 @@ exports.default = Object.assign({
     scopes: ['@html5', '@node'],
     defaultEmailSuffix: '@example.com',
     admins: [],
+    statistics: false,
 }, NILPPM_CONFIGS);

@@ -5,6 +5,7 @@ import PackageSequelize from './sequelize/package';
 import TagSequelize from './sequelize/tag';
 import UserSequelize from './sequelize/user';
 import VersionSequelize from './sequelize/version';
+import StatisticsTableModel from './sequelize/statistics';
 
 interface SequelizeItems {
   maintainer: typeof MaintainerSequelize,
@@ -12,6 +13,7 @@ interface SequelizeItems {
   tag: typeof TagSequelize,
   user: typeof UserSequelize,
   version: typeof VersionSequelize,
+  statistics: typeof StatisticsTableModel,
 }
 
 export type NPMContext = OrmContext<SequelizeItems>;

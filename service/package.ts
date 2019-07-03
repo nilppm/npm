@@ -372,6 +372,9 @@ export default class PackageService extends Component.Service<NPMContext> {
       pkg.versions[version].dist.size = attachment.length;
     }
 
+    const _package = pkg.versions[version];
+    _package.author = account;
+
     const versionModel = await VersionService.createNewVersion({
       pid: packageId,
       name: version,
@@ -380,7 +383,7 @@ export default class PackageService extends Component.Service<NPMContext> {
       shasum,
       tarball: filename,
       size: attachment.length,
-      package: JSON.stringify(pkg.versions[version]),
+      package: JSON.stringify(_package),
       rev: uuid()
     });
 

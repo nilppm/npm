@@ -1,12 +1,11 @@
 {
   "name": "@nilppm/npm",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Node's internal lightweight private package manager",
   "main": "dist/index.js",
   "bin": {
     "nilppm": "dist/bin.js"
   },
-  "source": "dist",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nilppm/npm.git"

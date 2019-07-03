@@ -98,6 +98,8 @@ module.exports = {
   },
   // 需要redis支持来缓存数据
   redis: '192.168.2.xxx:6379',
+  // 缓存前缀名
+  redis_prefix: 'nilppm:npm',
   // 本服务对外暴露绑定的域名，注意：需要带上http://
   registryHost: 'http://127.0.0.1:9000',
   // NPM允许上传的私有scope数组
@@ -106,6 +108,9 @@ module.exports = {
   defaultEmailSuffix: '@example.com',
   // 管理员账户足
   admins: ['anyone'],
+  // 是否开启下载量统计
+  // 开启的话，下载时候速度略微慢一些
+  statistics: false,
 
   // 当我们使用自定义用户体系的时候，
   // 我们需要提供一个获取用户信息的接口

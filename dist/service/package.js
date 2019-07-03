@@ -319,6 +319,8 @@ class PackageService extends nelts_1.Component.Service {
         if (pkg.versions[version].dist) {
             pkg.versions[version].dist.size = attachment.length;
         }
+        const _package = pkg.versions[version];
+        _package.author = account;
         const versionModel = await VersionService.createNewVersion({
             pid: packageId,
             name: version,
@@ -327,7 +329,7 @@ class PackageService extends nelts_1.Component.Service {
             shasum,
             tarball: filename,
             size: attachment.length,
-            package: JSON.stringify(pkg.versions[version]),
+            package: JSON.stringify(_package),
             rev: uuid()
         });
         const vid = versionModel.id;
