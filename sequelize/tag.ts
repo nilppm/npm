@@ -15,11 +15,9 @@ export default class TagTableModel extends Model {
       },
       name: {
         type: DataTypes.STRING(100),
-        unique: 'uq_pid_name',
       },
       pid: {
         type: DataTypes.INTEGER,
-        unique: 'uq_pid_name',
       },
       vid: DataTypes.INTEGER,
     }, {

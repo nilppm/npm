@@ -1,6 +1,7 @@
 import { NPMContext } from '../index';
 import { Component } from '@nelts/nelts';
 import { Cacheable } from '@nelts/orm';
+import { Op } from 'sequelize';
 
 interface VersionCompareTree {
   items?: {
@@ -12,6 +13,27 @@ interface VersionCompareTree {
 export default class VersionService extends Component.Service<NPMContext> {
   constructor(ctx: NPMContext) {
     super(ctx);
+  }
+
+  async removeAllByPid(pid: number) {
+    return await this.ctx.dbo.version.destroy({
+      where: { pid }
+    });
+  }
+
+  async findLatestVersion(pid: number, ctime: Date) {
+    return await this.ctx.dbo.version.findOne({
+      attributes: ['id'],
+      where: {
+        pid,
+        ctime: {
+          [Op.lt]: ctime
+        }
+      },
+      order: [
+        ['ctime', 'DESC']
+      ]
+    });
   }
 
   @Cacheable('/package/:pid(\\d+)/versions')
@@ -76,6 +98,13 @@ export default class VersionService extends Component.Service<NPMContext> {
     });
   }
 
+  async getVersionByPidAndName(pid: number, name: string, ...args: string[]) {
+    return await this.ctx.dbo.version.findOne({
+      attributes: args.length > 0 ? args : ['id'],
+      where: { pid, name }
+    });
+  }
+
   async createNewVersion(options: object) {
     return await this.ctx.dbo.version.create(options);
   }
@@ -93,6 +122,45 @@ export default class VersionService extends Component.Service<NPMContext> {
     return await this.ctx.dbo.version.update(data, {
       where: {
         id
+      }
+    });
+  }
+
+  async update(pid: number, version: any) {
+    const one = await this.ctx.dbo.version.findOne({
+      attributes: ['id', 'package'],
+      where: { 
+        pid, 
+        name: version.version
+      }
+    });
+    if (!one) return 0;
+    const pkg = JSON.parse(one.package);
+    const condition = pkg.deprecated !== version.deprecated;
+    if (condition) {
+      await this.ctx.dbo.version.update({
+        package: JSON.stringify(version),
+        mtime: new Date()
+      }, {
+        where: {
+          id: one.id
+        }
+      });
+      return 1;
+    }
+    return 0;
+  }
+
+  async deleteVersion(vid: number) {
+    return await this.ctx.dbo.version.destroy({
+      where: { id: vid }
+    });
+  }
+
+  async getCountOfPid(pid: number) {
+    return await this.ctx.dbo.version.count({
+      where: {
+        pid
       }
     });
   }

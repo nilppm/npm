@@ -70,10 +70,12 @@ export default Scope<WorkerPlugin>(app => {
     @Controller.Middleware(app.middleware.UserLoginMiddleware)
     async putPackageWithScope(ctx: NPMContext) {
       const service = new this.service.PackageService(ctx);
-      await service.publish(ctx.account, ctx.request.body)
-      ctx.body = {
-        ok: true,
-      };
+      if (ctx.request.body._attachments) {
+        await service.publish(ctx.account, ctx.request.body);
+      } else {
+        await service.updatPackage(ctx.request.body);
+      }
+      ctx.body = { ok: true };
     }
 
     @Controller.Put('/@:scope/:pkgname')
@@ -81,8 +83,15 @@ export default Scope<WorkerPlugin>(app => {
     @Controller.Request.Dynamic.Loader(Extra.Body<NPMContext>({ isapi: true }))
     @Controller.Middleware(app.middleware.UserLoginMiddleware)
     async putPackageWithScopeAndPkgname(ctx: NPMContext) {
+      const pkg = ctx.request.body;
+      const version = pkg.version;
       const service = new this.service.PackageService(ctx);
-      ctx.body = await service.publish(ctx.account, ctx.request.body);
+      if (pkg._attachments) {
+        await service.publish(ctx.account, ctx.request.body);
+      } else if (pkg.versions && pkg.versions[version].deprecated) {
+        await service.deprecate(pkg.name, version, pkg.versions[version].deprecated);
+      }
+      ctx.body = { ok: true };
     }
 
     @Controller.Put('/@:scope/-rev/:rev')
@@ -107,6 +116,30 @@ export default Scope<WorkerPlugin>(app => {
       ctx.body = {
         ok: true
       }
+    }
+
+    @Controller.Delete('/download/@:scope/:pkgname/-rev/:rev')
+    @Controller.Request.Static.Filter(app.middleware.decodePackageWithScopeAndPkgname)
+    @Controller.Middleware(app.middleware.UserLoginMiddleware)
+    async unPublishWithLocal(ctx: NPMContext) {
+      const service = new this.service.PackageService(ctx);
+      ctx.body = await service.unPublish(ctx.pkg.pathname, ctx.params.rev);
+    }
+
+    @Controller.Delete('/@:scope/-rev/:rev')
+    @Controller.Request.Static.Filter(app.middleware.decodePackageWithScope)
+    @Controller.Middleware(app.middleware.UserLoginMiddleware)
+    async unPublishWithScope(ctx: NPMContext) {
+      const service = new this.service.PackageService(ctx);
+      ctx.body = await service.unPublish(ctx.pkg.pathname, ctx.params.rev);
+    }
+
+    @Controller.Delete('/@:scope/:pkgname/-rev/:rev')
+    @Controller.Request.Static.Filter(app.middleware.decodePackageWithScopeAndPkgname)
+    @Controller.Middleware(app.middleware.UserLoginMiddleware)
+    async unPublishWithScopeAndName(ctx: NPMContext) {
+      const service = new this.service.PackageService(ctx);
+      ctx.body = await service.unPublish(ctx.pkg.pathname, ctx.params.rev);
     }
   }
 

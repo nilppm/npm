@@ -16,6 +16,12 @@ export default class MaintainerService extends Component.Service<NPMContext> {
     this.configs = ctx.app.configs;
   }
 
+  async removeAllByPid(pid: number) {
+    return await this.ctx.dbo.maintainer.destroy({
+      where: { pid }
+    });
+  }
+
   @Cacheable('/package/:pid(\\d+)/maintainers')
   async getMaintainersCache(pid: number): Promise<any> {
     const result = await this.getMaintainersByPid(pid);
@@ -23,6 +29,7 @@ export default class MaintainerService extends Component.Service<NPMContext> {
   }
 
   checkMaintainerAllow(account: string, maintainers: MaintainerData[]) {
+    if (!account) throw new Error('you must login first.');
     if (this.configs.admins) {
       const admins = Array.isArray(this.configs.admins) ? this.configs.admins : [this.configs.admins];
       if (admins.indexOf(account) > -1) return true;

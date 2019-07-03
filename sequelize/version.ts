@@ -40,6 +40,11 @@ export default class VersionTableModel extends Model {
           name: 'idx_rev',
           unique: true,
           fields: ['rev']
+        },
+        {
+          name: 'uq_pid_name',
+          unique: true,
+          fields: ['pid', 'name']
         }
       ],
     });

@@ -1,7 +1,7 @@
 import { NPMContext } from '../index';
 import { Component, NELTS_CONFIGS } from '@nelts/nelts';
 import * as request from 'request';
-import { Cacheable, CacheableInterface } from '@nelts/orm';
+import { CacheableInterface } from '@nelts/orm';
 import * as path from 'path';
 import * as crypto from 'crypto';
 import * as uuid from 'uuid/v4';
@@ -13,6 +13,76 @@ export default class PackageService extends Component.Service<NPMContext> {
   constructor(ctx: NPMContext) {
     super(ctx);
     this.configs = ctx.app.configs;
+  }
+
+  async unPublish(filepath: string, rev: string) {
+    const MaintainerService = new this.service.MaintainerService(this.ctx);
+    const VersionService = new this.service.VersionService(this.ctx);
+    const TagService = new this.service.TagService(this.ctx);
+    const result = await VersionService.getSingleVersionByRev(rev, 'id', 'pid', 'name', 'package', 'ctime', 'tarball');
+    if (!result) throw new Error('cannot find the rev of ' + rev);
+    const pack = await this.getSinglePackageById(result.pid, 'id', 'pathname');
+    if (!pack) throw new Error('cannot find the package of id: ' + result.pid);
+    if (filepath.endsWith('.tgz')) {
+      if (pack.pathname + '-' + result.name + '.tgz' !== filepath) throw new Error('invaild package receiver.');
+    }
+    
+    const maintainers = await MaintainerService.getMaintainersByPid(pack.id);
+    if (!MaintainerService.checkMaintainerAllow(this.ctx.account, maintainers)) throw new Error('you cannot unpublish this package');
+    await VersionService.deleteVersion(result.id);
+    const count = await VersionService.getCountOfPid(pack.id);
+    if (count === 0) {
+      await this.clearPackage(pack.id);
+      await this.removePackageCache(pack.id, pack.pathname);
+    } else {
+      const tags = await TagService.getVidAndNameByPid(pack.id);
+      let pool: string[] = [];
+      for (let i = 0; i < tags.length; i++) {
+        if (tags[i].vid === result.id) {
+          pool.push(tags[i].name);
+        }
+      }
+      if (pool.length) {
+        const version = await VersionService.findLatestVersion(pack.id, new Date(result.ctime));
+        if (version) {
+          await TagService.updateVidOnNamesByPid(pack.id, version.id, pool);
+        }
+      }
+      await this.updateModifiedTime(pack.id);
+      await this.updatePackageCache(pack.id);
+    }
+    const dfile = path.resolve(this.configs.nfs, result.tarball);
+    if (fs.existsSync(dfile)) fs.unlinkSync(dfile);
+    return JSON.parse(result.package);
+  }
+
+  async clearPackage(pid: number) {
+    const MaintainerService = new this.service.MaintainerService(this.ctx);
+    const TagService = new this.service.TagService(this.ctx);
+    const VersionService = new this.service.VersionService(this.ctx);
+    await Promise.all([
+      MaintainerService.removeAllByPid(pid),
+      TagService.removeAllByPid(pid),
+      VersionService.removeAllByPid(pid),
+      this.removeAllByPid(pid)
+    ]);
+  }
+
+  async removeAllByPid(pid: number) {
+    return await this.ctx.dbo.package.destroy({
+      where: { id: pid }
+    });
+  }
+
+  async removePackageCache(pid: number, pathname: string) {
+    const TagServer = new this.service.TagService(this.ctx);
+    const VersionService = new this.service.VersionService(this.ctx);
+    const MaintainerService = new this.service.MaintainerService(this.ctx);
+
+    await MaintainerService.getMaintainersCache(pid).delete({ pid });
+    await TagServer.getTagsCache(pid).delete({ pid });
+    await VersionService.getVersionCache(pid).delete({ pid });
+    await this.ctx.redis.delete(':package:' + pathname);
   }
 
   // @Cacheable('/package/:pathname/:version')
@@ -85,12 +155,18 @@ export default class PackageService extends Component.Service<NPMContext> {
     const distTags: {[name: string]: string} = {};
     const chunkVersions: {[version: string]: any} = {};
     const times: {[version: string]: string} = {};
+    for (const i in tags) distTags[i] = versions[tags[i]].version;
+    if (version && !/^\d+\.\d+\.\d+$/.test(version)) {
+      if (!distTags[version]) throw new Error('cannot find tag in dist-tags:' + version);
+      version = distTags[version];
+    }
     if (!version) {
       if (!versions[tags.latest]) throw new Error('cannot find the latest version');
       chunk = versions[tags.latest];
     } else {
       for (const i in versions) {
         if (versions[i].version === version) {
+          
           chunk = versions[i];
           break;
         }
@@ -106,7 +182,6 @@ export default class PackageService extends Component.Service<NPMContext> {
         email: user.email,
       }
     });
-    for (const i in tags) distTags[i] = versions[tags[i]].version;
     chunk['dist-tags'] = distTags;
     for (const i in versions) {
       times[versions[i].version] = versions[i]._created;
@@ -173,6 +248,15 @@ export default class PackageService extends Component.Service<NPMContext> {
     return res[0];
   }
 
+  async getSinglePackageById(id: number, ...attributes: string[]) {
+    const res = await this.ctx.dbo.package.findAll({
+      attributes: attributes.length > 0 ? attributes : ['id'],
+      where: { id }
+    });
+    if (!res.length) return;
+    return res[0];
+  }
+
   /**
    * 创建一个新的模块数据
    * @param scope {string} scope域
@@ -184,6 +268,27 @@ export default class PackageService extends Component.Service<NPMContext> {
     return await this.ctx.dbo.package.create({
       scope, name, pathname,
     });
+  }
+
+  async updatPackage(pkg: any) {
+    const pathname = pkg.name;
+    const versions = pkg.versions;
+    const pack = await this.getSinglePackageByPathname(pathname);
+    const VersionService = new this.service.VersionService(this.ctx);
+    const MaintainerService = new this.service.MaintainerService(this.ctx);
+    if (!pack) throw new Error('cannot find the package of ' + pathname);
+    const maintainers = await MaintainerService.getMaintainersByPid(pack.id);
+    if (!MaintainerService.checkMaintainerAllow(this.ctx.account, maintainers)) throw new Error('you cannot update version metadata ' + pkg.name);
+    const pid = pack.id;
+    let updated = 0;
+    for (const i in versions) {
+      const version = versions[i];
+      updated += await VersionService.update(pid, version);
+    }
+    if (updated) {
+      await this.updateModifiedTime(pid);
+      await this.updatePackageCache(pid);
+    }
   }
 
   /**
