@@ -23,7 +23,7 @@ exports.default = nelts_1.Scope(app => {
             super(app);
         }
         async metadata(ctx) {
-            const project = require('../package.json');
+            const project = require(app.env.startsWith('dev') ? '../package.json' : '../../package.json');
             if (Date.now() - CPM_TIME > 10 * 60 * 1000) {
                 CPM_CACHE = await total_1.default(ctx);
                 CPM_TIME = Date.now();
