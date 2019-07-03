@@ -55,7 +55,7 @@ export default class UserService extends Component.Service<NPMContext> {
     const cache: CacheableInterface = await this.userCache(account);
     let user = await cache.get({ account });
     if (!user) {
-      const userinfo = typeof this.configs.user === 'function' ? await this.configs.user(account) : {
+      const userinfo = typeof this.configs.getUserInfo === 'function' ? await this.configs.getUserInfo(account) : {
         account,
         name: account,
         email: this.configs.defaultEmailSuffix ? account + this.configs.defaultEmailSuffix : null,
@@ -110,7 +110,7 @@ export default class UserService extends Component.Service<NPMContext> {
     let userinfo: UserInfo;
     const rev = Buffer.from(data.name + ':' + data.password, 'utf8').toString('base64');
 
-    if (typeof this.configs.login !== 'function') {
+    if (typeof this.configs.userLogin !== 'function') {
       userinfo = {
         account: data.name,
         name: data.name,
@@ -120,7 +120,7 @@ export default class UserService extends Component.Service<NPMContext> {
         extra: {}
       }
     } else {
-      userinfo = await this.configs.login(data.name, data.password, new Date(data.date));
+      userinfo = await this.configs.userLogin(data.name, data.password, new Date(data.date));
     }
 
     if (Array.isArray(this.configs.scopes)) {

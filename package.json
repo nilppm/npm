@@ -3,16 +3,17 @@
   "version": "1.0.0",
   "description": "Node's internal lightweight private package manager",
   "main": "dist/index.js",
+  "bin": {
+    "nilppm": "dist/bin.js"
+  },
+  "source": "dist",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nilppm/npm.git"
   },
   "scripts": {
     "dev": "nelts-server dev -m 1",
-    "build": "rm -rf dist/ && tsc -d",
-    "start": "nelts-server start",
-    "restart": "nelts-server restart",
-    "stop": "nelts-server stop"
+    "build": "rm -rf dist/ && tsc -d"
   },
   "keywords": [
     "template",
@@ -31,6 +32,7 @@
     "@types/fs-extra": "^8.0.0",
     "@types/request": "^2.48.1",
     "@types/uuid": "^3.4.5",
+    "commander": "^2.20.0",
     "fs-extra": "^8.1.0",
     "mysql2": "^1.6.5",
     "request": "^2.88.0",

@@ -1,5 +1,13 @@
+import * as fs from 'fs';
 import * as path from 'path';
-export default {
+import { Require } from '@nelts/nelts';
+const NILPPM_PATH = path.resolve(process.cwd(), 'nilppm.config.js');
+let NILPPM_CONFIGS: { [name: string]: any } = {};
+if (fs.existsSync(NILPPM_PATH)) {
+  NILPPM_CONFIGS = Require<{ [name: string]: any }>(NILPPM_PATH);
+  NILPPM_CONFIGS.nfs = process.cwd();
+}
+export default Object.assign({
   cookie: ['nelts', 'cookie'],
   sequelize: {
     database: 'cpm',
@@ -30,7 +38,10 @@ export default {
   scopes: ['@html5', '@node'],
   defaultEmailSuffix: '@example.com',
   admins: [],
-  // login(account: string, password: string, date: Date) {
+  // async userLogin(account: string, password: string, date: Date) {
+
+  // },
+  // async getUserInfo(account: string) {
 
   // }
-}
+}, NILPPM_CONFIGS);

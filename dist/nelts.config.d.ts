@@ -25,5 +25,7 @@ declare const _default: {
     scopes: string[];
     defaultEmailSuffix: string;
     admins: any[];
+} & {
+    [name: string]: any;
 };
 export default _default;
