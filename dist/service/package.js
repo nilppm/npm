@@ -182,10 +182,19 @@ class PackageService extends nelts_1.Component.Service {
             times[versions[i].version] = versions[i]._created;
             chunkVersions[versions[i].version] = versions[i];
         }
+        chunk._nilppm = true;
         chunk.versions = chunkVersions;
         chunk.time = times;
         chunk.time.created = ctime;
         chunk.time.modified = mtime;
+        if (chunk.main)
+            delete chunk.main;
+        if (chunk._nodeVersion)
+            delete chunk._nodeVersion;
+        if (chunk._npmUser)
+            delete chunk._npmUser;
+        if (chunk._npmVersion)
+            delete chunk._npmVersion;
         return chunk;
     }
     async getPackageInfo(pkg) {
@@ -321,6 +330,10 @@ class PackageService extends nelts_1.Component.Service {
         }
         const _package = pkg.versions[version];
         _package.author = account;
+        if (_package.scripts)
+            delete _package.scripts;
+        if (_package.readmeFilename)
+            delete _package.readmeFilename;
         const versionModel = await VersionService.createNewVersion({
             pid: packageId,
             name: version,

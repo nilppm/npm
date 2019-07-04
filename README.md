@@ -59,7 +59,7 @@ $ npm i -g pm2
 {
   // ...
   "scripts": {
-    "start": "nilppm start -m 1 -p 9000 && pm2 logs",
+    "start": "nilppm start -p 9000 && pm2 logs",
     "restart": "nilppm restart",
     "stop": "nilppm stop"
   },
