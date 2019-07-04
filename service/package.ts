@@ -185,7 +185,20 @@ export default class PackageService extends Component.Service<NPMContext> {
       const text = await this.getUri(this.configs[fetchPackageRegistriesOrder[i]], pathname, version);
       try{
         const result = JSON.parse(text);
-        if (!result.error) return result;
+        if (!result.error) {
+          if (!result.version) {
+            if (!version) {
+              result.version = result['dist-tags'].latest;
+            } else {
+              if (/\d+\.\d+\.\d+/.test(version)) {
+                result.version = version;
+              } else {
+                result.version = result['dist-tags'][version];
+              }
+            }
+          }
+          return result;
+        }
       }catch(e){}
     }
     throw new Error('not found');
@@ -231,16 +244,19 @@ export default class PackageService extends Component.Service<NPMContext> {
       version = distTags[version];
     }
 
+    let _currentVersion: string;
     if (!version) {
       // 如果没有latest版本指向
       // 我们认为是不合规的版本包
       if (!versions[tags.latest]) throw new Error('cannot find the latest version');
       chunk = versions[tags.latest];
+      _currentVersion = tags.latest;
     } else {
       for (const i in versions) {
         if (versions[i].version === version) {
           // 取得当前指定的版本chunk
           chunk = versions[i];
+          _currentVersion = version;
           break;
         }
       }
@@ -250,6 +266,7 @@ export default class PackageService extends Component.Service<NPMContext> {
 
     // 复制版本chunk，防止指针指向
     chunk = JSON.parse(JSON.stringify(chunk));
+    if (!chunk.version) chunk.version = _currentVersion;
 
     // chunk中插入maintainers数据
     chunk.maintainers = (await Promise.all(maintainers.map(
@@ -269,6 +286,7 @@ export default class PackageService extends Component.Service<NPMContext> {
       times[versions[i].version] = versions[i]._created;
       // chunk中versions字段需要的数据
       chunkVersions[versions[i].version] = versions[i];
+      if (chunkVersions[versions[i].version].readme) delete chunkVersions[versions[i].version].readme;
     }
 
     chunk._nilppm = true; // 制定当前包来源nilppm私有管理系统
@@ -294,15 +312,22 @@ export default class PackageService extends Component.Service<NPMContext> {
       return await this.getLocalPackageByPid(pck.id, new Date(pck.ctime), new Date(pck.mtime), pkg.version);
     }
 
-    const pack = await this.getSinglePackageByPathname(pkg.pathname, 'ctime', 'mtime');
-    if (pack) {
-      // 如果数据库存在这个包
-      // 而缓存不存在
-      // 那么重建缓存 返回包数据
-      await this.updatePackageCache(pack.id);
-      return await this.getLocalPackageByPid(pack.id, pack.ctime, pack.mtime, pkg.version);
+    const sp = pkg.pathname.split('/');
+    if (sp.length > 2) throw new Error('invaild package name');
+    if (sp.length === 2) {
+      const scope = sp[0];
+      if (this.configs.scopes.indexOf(scope) > -1) {
+        const pack = await this.getSinglePackageByPathname(pkg.pathname, 'ctime', 'mtime');
+        if (pack) {
+          // 如果数据库存在这个包
+          // 而缓存不存在
+          // 那么重建缓存 返回包数据
+          await this.updatePackageCache(pack.id);
+          return await this.getLocalPackageByPid(pack.id, pack.ctime, pack.mtime, pkg.version);
+        }
+      }
     }
-    
+
     // 获取公有包数据
     return await this.getRemotePackageInformation(pkg.pathname, pkg.version);
   }

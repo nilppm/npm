@@ -123,8 +123,22 @@ class PackageService extends nelts_1.Component.Service {
             const text = await this.getUri(this.configs[fetchPackageRegistriesOrder[i]], pathname, version);
             try {
                 const result = JSON.parse(text);
-                if (!result.error)
+                if (!result.error) {
+                    if (!result.version) {
+                        if (!version) {
+                            result.version = result['dist-tags'].latest;
+                        }
+                        else {
+                            if (/\d+\.\d+\.\d+/.test(version)) {
+                                result.version = version;
+                            }
+                            else {
+                                result.version = result['dist-tags'][version];
+                            }
+                        }
+                    }
                     return result;
+                }
             }
             catch (e) { }
         }
@@ -155,15 +169,18 @@ class PackageService extends nelts_1.Component.Service {
                 throw new Error('cannot find tag in dist-tags:' + version);
             version = distTags[version];
         }
+        let _currentVersion;
         if (!version) {
             if (!versions[tags.latest])
                 throw new Error('cannot find the latest version');
             chunk = versions[tags.latest];
+            _currentVersion = tags.latest;
         }
         else {
             for (const i in versions) {
                 if (versions[i].version === version) {
                     chunk = versions[i];
+                    _currentVersion = version;
                     break;
                 }
             }
@@ -171,6 +188,8 @@ class PackageService extends nelts_1.Component.Service {
         if (!chunk)
             throw new Error('invaild version data in cache');
         chunk = JSON.parse(JSON.stringify(chunk));
+        if (!chunk.version)
+            chunk.version = _currentVersion;
         chunk.maintainers = (await Promise.all(maintainers.map((maintainer) => UserService.userCache(maintainer).get({ account: maintainer })))).map((user) => {
             return {
                 name: user.account,
@@ -181,6 +200,8 @@ class PackageService extends nelts_1.Component.Service {
         for (const i in versions) {
             times[versions[i].version] = versions[i]._created;
             chunkVersions[versions[i].version] = versions[i];
+            if (chunkVersions[versions[i].version].readme)
+                delete chunkVersions[versions[i].version].readme;
         }
         chunk._nilppm = true;
         chunk.versions = chunkVersions;
@@ -202,10 +223,18 @@ class PackageService extends nelts_1.Component.Service {
         if (pck) {
             return await this.getLocalPackageByPid(pck.id, new Date(pck.ctime), new Date(pck.mtime), pkg.version);
         }
-        const pack = await this.getSinglePackageByPathname(pkg.pathname, 'ctime', 'mtime');
-        if (pack) {
-            await this.updatePackageCache(pack.id);
-            return await this.getLocalPackageByPid(pack.id, pack.ctime, pack.mtime, pkg.version);
+        const sp = pkg.pathname.split('/');
+        if (sp.length > 2)
+            throw new Error('invaild package name');
+        if (sp.length === 2) {
+            const scope = sp[0];
+            if (this.configs.scopes.indexOf(scope) > -1) {
+                const pack = await this.getSinglePackageByPathname(pkg.pathname, 'ctime', 'mtime');
+                if (pack) {
+                    await this.updatePackageCache(pack.id);
+                    return await this.getLocalPackageByPid(pack.id, pack.ctime, pack.mtime, pkg.version);
+                }
+            }
         }
         return await this.getRemotePackageInformation(pkg.pathname, pkg.version);
     }
