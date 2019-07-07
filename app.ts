@@ -1,8 +1,7 @@
 import { WorkerPlugin, ContextError } from '@nelts/nelts';
-// import { IncomingMessage, ServerResponse } from 'http';
 import { NPMContext } from './index';
 
-export default (app: WorkerPlugin) => {
+export default (plu: WorkerPlugin) => {
   
   // app.on('ServerStarted', () => console.log('nelts life [ServerStarted] invoked.'));
   // app.on('ServerStopping', () => console.log('nelts life [ServerStopping] invoked.'));
@@ -20,25 +19,35 @@ export default (app: WorkerPlugin) => {
   // app.on('ContextReject', (e: Error, ctx: NPMContext) => console.log('nelts context life status [ContextReject] invoked.'));
 
   // 向子依赖注入参数
-  app.on('props', async configs => await app.getComponent('@nelts/orm').props({
+  plu.on('props', async configs => await plu.getComponent('@nelts/orm').props({
     sequelize: configs.sequelize,
     redis: configs.redis,
     redis_prefix: configs.redis_prefix,
   }));
 
   // 请求级别错误容错处理
-  app.on('ContextStart', (ctx: NPMContext) => {
+  plu.on('ContextStart', (ctx: NPMContext) => {
     ctx.on('error', (err: ContextError) => {
       ctx.status = err.status || 422;
       ctx.body = {
+        status: ctx.status,
         error: err.message,
       }
     });
   });
 
   // 辅助请求拦截事件
-  // app.on('ServerRequest', (req: IncomingMessage, res: ServerResponse) => console.log(` - [${req.method}] inComingRequest:`, req.url));
+  if (plu.configs.debug) {
+    plu.app.use(async (req, res, next) => {
+      console.log(` - [${req.method}] inComingRequest:`, req.url);
+      await next();
+    });
+  }
 
   // npm prepare login data
-  // app.on('NpmPrepareLogin', (ctx: NPMContext, v: number) => console.log(` - [v${v}] NpmPrepareLogin:`, ctx.request.body));
+  plu.on('NpmPrepareLogin', async (ctx: NPMContext, v: number) => {
+    if (typeof plu.configs.npmLogin === 'function') {
+      await plu.configs.npmLogin(ctx, v);
+    }
+  });
 }

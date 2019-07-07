@@ -139,6 +139,24 @@ module.exports = {
 
 `sequelize` 不局限使用mysql，所以只要`sequelize`支持的数据库，我们都可以使用。
 
+### configs.npmLogin(ctx: NPMContext, v: number): Promise<any>
+
+这是一个特殊的函数，用来做NPM:Login行为的HOOK函数。比如说上报登录次数，收集登录环境参数等。
+
+```javascript
+module.exports = {
+  // ...
+  npmLogin(ctx, v) {
+    return ctx.sendLogger({
+      npmVersion: v,
+      body: ctx.request.body,
+    });
+  }
+}
+```
+
+> 这个函数不是必须，而是可选，一般没什么用处，可以省略。
+
 ## 第六步
 
 通过以下命令启动
