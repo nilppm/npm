@@ -1,3 +1,3 @@
 import { WorkerPlugin } from '@nelts/nelts';
-declare const _default: (app: WorkerPlugin) => void;
+declare const _default: (plu: WorkerPlugin) => void;
 export default _default;

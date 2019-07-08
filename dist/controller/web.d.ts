@@ -6,5 +6,4 @@ export default class WebController extends Component.Controller {
     getUserWithPkgname(ctx: NPMContext): Promise<void>;
     getUserWithScopeAndPkgnameUseVersion(ctx: NPMContext): Promise<void>;
     getUserWithPkgnameUseVersion(ctx: NPMContext): Promise<void>;
-    getGithubCounts(ctx: NPMContext): Promise<void>;
 }

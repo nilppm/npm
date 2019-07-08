@@ -37,12 +37,10 @@ export default (plu: WorkerPlugin) => {
   });
 
   // 辅助请求拦截事件
-  if (plu.configs.debug) {
-    plu.app.use(async (req, res, next) => {
-      console.log(` - [${req.method}] inComingRequest:`, req.url);
-      await next();
-    });
-  }
+  plu.app.use(async (req, res, next) => {
+    console.log(` - [${req.method}] inComingRequest:`, req.url);
+    await next();
+  });
 
   // npm prepare login data
   plu.on('NpmPrepareLogin', async (ctx: NPMContext, v: number) => {

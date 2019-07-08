@@ -1,6 +1,11 @@
 import { NPMContext } from '../index';
-import { Component, NELTS_CONFIGS } from '@nelts/nelts';
+import { Component, NELTS_CONFIGS, LRU } from '@nelts/nelts';
 import { url } from 'gravatar';
+import * as request from 'request';
+import * as cheerio from 'cheerio';
+const lru = new LRU(300);
+const NpmApi = require('npm-api');
+const npm = new NpmApi();
 
 export default class WebService extends Component.Service<NPMContext> {
   private configs: NELTS_CONFIGS;
@@ -14,7 +19,51 @@ export default class WebService extends Component.Service<NPMContext> {
     const result = await PackageService.getPackageInfo({ pathname, version });
     this.fixRepo(result);
     await this.fixUser(result);
+    const properties: Promise<any>[] = [];
+    result._downloads = {};
+    if (!result._nilppm) {
+      const repo = npm.repo(pathname);
+      if (!result.readme) properties.push(this.fixReadme(pathname, result.version).then(data => result.readme = data));
+      if (!result.dependencies) properties.push(repo.dependencies(result.version).then((data: any) => result.dependencies = data));
+      if (!result.devDependencies) properties.push(repo.devDependencies(result.version).then((data: any) => result.devDependencies = data));
+      if (result['dist-tags'].latest === result.version) this.fixStatisticsFromNpm(pathname, properties, result);
+    } else {
+      if (result['dist-tags'].latest === result.version) {
+        this.fixStatisticsFromDBO(pathname, properties, result);
+      }
+    }
+    await Promise.all(properties);
     return result;
+  }
+
+  fixStatisticsFromDBO(pathname: string, properties: Promise<any>[], result: any) {
+    const StatisticsService = new this.service.StatisticsService(this.ctx);
+    // properties.push(StatisticsService.Week(pathname).then((data: any) => result._downloads.week = data));
+    properties.push(StatisticsService.Month(pathname).then((data: any) => result._downloads.month = data));
+  }
+
+  fixStatisticsFromNpm(pathname: string, properties: Promise<any>[], result: any) {
+    // properties.push(this.getNpmDownloadsApi('https://api.npmjs.org/downloads/range/last-week/' + pathname).then((data: string) => {
+    //   const _data = JSON.parse(data);
+    //   if (_data.error) return Promise.reject(new Error(_data.error));
+    //   result._downloads.week = _data.downloads;
+    //   console.log(result._downloads.week)
+    // }))
+    properties.push(this.getNpmDownloadsApi('https://api.npmjs.org/downloads/range/last-month/' + pathname).then((data: string) => {
+      const _data = JSON.parse(data);
+      if (_data.error) return Promise.reject(new Error(_data.error));
+      result._downloads.month = _data.downloads;
+    }))
+  }
+
+  async getNpmDownloadsApi(url: string) {
+    return await new Promise((resolve, reject) => {
+      request.get(url, (err: Error, response: request.Response, body: string) => {
+        if (err) return reject(err);
+        if (response.statusCode >= 300 || response.statusCode < 200) return reject(new Error(response.statusMessage));
+        resolve(body);
+      });
+    });
   }
 
   fixRepo(result: any) {
@@ -79,5 +128,17 @@ export default class WebService extends Component.Service<NPMContext> {
       avatar: url(user.email),
       nick: user.name,
     }
+  }
+
+  async fixReadme(pathname: string, version: string) {
+    const key = `${pathname}:${version}`;
+    const content = lru.get(key);
+    if (content) return content;
+    let url = `https://www.npmjs.com/package/${pathname}`;
+    if (version) url += '/v/' + version;
+    const html: any = await this.getNpmDownloadsApi(url);
+    const readme = cheerio.load(html)('#readme').html();
+    lru.set(key, readme);
+    return readme;
   }
 }

@@ -4,6 +4,9 @@ export default class WebService extends Component.Service<NPMContext> {
     private configs;
     constructor(ctx: NPMContext);
     getPackage(pathname: string, version?: string): Promise<any>;
+    fixStatisticsFromDBO(pathname: string, properties: Promise<any>[], result: any): void;
+    fixStatisticsFromNpm(pathname: string, properties: Promise<any>[], result: any): void;
+    getNpmDownloadsApi(url: string): Promise<unknown>;
     fixRepo(result: any): void;
     fixUser(result: any): Promise<void>;
     formatUserAvatar(user: {
@@ -15,4 +18,5 @@ export default class WebService extends Component.Service<NPMContext> {
         avatar: string;
         nick: string;
     }>;
+    fixReadme(pathname: string, version: string): Promise<any>;
 }

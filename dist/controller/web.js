@@ -10,7 +10,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const nelts_1 = require("@nelts/nelts");
-const request = require("request");
 const Controller = nelts_1.Decorator.Controller;
 let WebController = class WebController extends nelts_1.Component.Controller {
     constructor(app) {
@@ -31,20 +30,6 @@ let WebController = class WebController extends nelts_1.Component.Controller {
     async getUserWithPkgnameUseVersion(ctx) {
         const service = new this.service.WebService(ctx);
         ctx.body = await service.getPackage(ctx.params.pkgname, ctx.params.version);
-    }
-    async getGithubCounts(ctx) {
-        const body = ctx.request.body;
-        ctx.body = await new Promise((resolve, reject) => {
-            const url = 'https://api.github.com/repos/' + body.pathname;
-            request.get(url, (err, response, body) => {
-                if (err)
-                    return reject(err);
-                if (response.statusCode >= 300 || response.statusCode < 200)
-                    return reject(new Error(response.statusMessage));
-                resolve(body);
-            });
-        });
-        ctx.type = 'json';
     }
 };
 __decorate([
@@ -71,13 +56,6 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], WebController.prototype, "getUserWithPkgnameUseVersion", null);
-__decorate([
-    Controller.Post('/package/github/repo/metadata'),
-    Controller.Request.Dynamic.Loader(nelts_1.Extra.Body({ isapi: true })),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", Promise)
-], WebController.prototype, "getGithubCounts", null);
 WebController = __decorate([
     Controller.Prefix('/api'),
     __metadata("design:paramtypes", [nelts_1.WorkerPlugin])

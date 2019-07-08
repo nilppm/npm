@@ -2,6 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const nelts_1 = require("@nelts/nelts");
 const gravatar_1 = require("gravatar");
+const request = require("request");
+const cheerio = require("cheerio");
+const lru = new nelts_1.LRU(300);
+const NpmApi = require('npm-api');
+const npm = new NpmApi();
 class WebService extends nelts_1.Component.Service {
     constructor(ctx) {
         super(ctx);
@@ -12,7 +17,49 @@ class WebService extends nelts_1.Component.Service {
         const result = await PackageService.getPackageInfo({ pathname, version });
         this.fixRepo(result);
         await this.fixUser(result);
+        const properties = [];
+        result._downloads = {};
+        if (!result._nilppm) {
+            const repo = npm.repo(pathname);
+            if (!result.readme)
+                properties.push(this.fixReadme(pathname, result.version).then(data => result.readme = data));
+            if (!result.dependencies)
+                properties.push(repo.dependencies(result.version).then((data) => result.dependencies = data));
+            if (!result.devDependencies)
+                properties.push(repo.devDependencies(result.version).then((data) => result.devDependencies = data));
+            if (result['dist-tags'].latest === result.version)
+                this.fixStatisticsFromNpm(pathname, properties, result);
+        }
+        else {
+            if (result['dist-tags'].latest === result.version) {
+                this.fixStatisticsFromDBO(pathname, properties, result);
+            }
+        }
+        await Promise.all(properties);
         return result;
+    }
+    fixStatisticsFromDBO(pathname, properties, result) {
+        const StatisticsService = new this.service.StatisticsService(this.ctx);
+        properties.push(StatisticsService.Month(pathname).then((data) => result._downloads.month = data));
+    }
+    fixStatisticsFromNpm(pathname, properties, result) {
+        properties.push(this.getNpmDownloadsApi('https://api.npmjs.org/downloads/range/last-month/' + pathname).then((data) => {
+            const _data = JSON.parse(data);
+            if (_data.error)
+                return Promise.reject(new Error(_data.error));
+            result._downloads.month = _data.downloads;
+        }));
+    }
+    async getNpmDownloadsApi(url) {
+        return await new Promise((resolve, reject) => {
+            request.get(url, (err, response, body) => {
+                if (err)
+                    return reject(err);
+                if (response.statusCode >= 300 || response.statusCode < 200)
+                    return reject(new Error(response.statusMessage));
+                resolve(body);
+            });
+        });
     }
     fixRepo(result) {
         const repository = result.repository;
@@ -82,6 +129,19 @@ class WebService extends nelts_1.Component.Service {
             avatar: gravatar_1.url(user.email),
             nick: user.name,
         };
+    }
+    async fixReadme(pathname, version) {
+        const key = `${pathname}:${version}`;
+        const content = lru.get(key);
+        if (content)
+            return content;
+        let url = `https://www.npmjs.com/package/${pathname}`;
+        if (version)
+            url += '/v/' + version;
+        const html = await this.getNpmDownloadsApi(url);
+        const readme = cheerio.load(html)('#readme').html();
+        lru.set(key, readme);
+        return readme;
     }
 }
 exports.default = WebService;
