@@ -111,6 +111,18 @@ class WebService extends nelts_1.Component.Service {
             result.maintainers = await Promise.all(result.maintainers.map((maintainer) => this.formatUserAvatar(maintainer)));
         }
     }
+    fixRemoteMaintainers(result) {
+        if (result.maintainers && result.maintainers.length) {
+            result.maintainers = result.maintainers.map((maintainer) => {
+                return {
+                    name: maintainer.username,
+                    email: maintainer.email,
+                    avatar: gravatar_1.url(maintainer.email),
+                    nick: maintainer.username,
+                };
+            });
+        }
+    }
     async formatUserAvatar(user) {
         const UserService = new this.service.UserService(this.ctx);
         const _user = await UserService.userCache(user.name).get({ account: user.name });

@@ -31,6 +31,19 @@ let WebController = class WebController extends nelts_1.Component.Controller {
         const service = new this.service.WebService(ctx);
         ctx.body = await service.getPackage(ctx.params.pkgname, ctx.params.version);
     }
+    async searchPackages(ctx) {
+        const service = new this.service.PackageService(ctx);
+        const t = Number(ctx.query.t);
+        switch (t) {
+            case 1:
+                ctx.body = await service.searchFromDBO(ctx.query.q, Number(ctx.query.s));
+                break;
+            case 2:
+                ctx.body = await service.searchFromNpm(ctx.query.q, Number(ctx.query.s));
+                break;
+            default: throw new Error('query.t can only be [1,2]');
+        }
+    }
 };
 __decorate([
     Controller.Get('/package/@:scope/:pkgname'),
@@ -56,6 +69,13 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], WebController.prototype, "getUserWithPkgnameUseVersion", null);
+__decorate([
+    Controller.Get('/search'),
+    Controller.Request.Static.Validator.Query('q', 's', 't'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], WebController.prototype, "searchPackages", null);
 WebController = __decorate([
     Controller.Prefix('/api'),
     __metadata("design:paramtypes", [nelts_1.WorkerPlugin])

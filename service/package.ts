@@ -7,12 +7,72 @@ import * as crypto from 'crypto';
 import * as uuid from 'uuid/v4';
 import * as fse from 'fs-extra';
 import * as fs from 'fs';
+import { Op }  from 'sequelize';
 
 export default class PackageService extends Component.Service<NPMContext> {
   private configs: NELTS_CONFIGS;
   constructor(ctx: NPMContext) {
     super(ctx);
     this.configs = ctx.app.configs;
+  }
+
+  async searchFromDBO(keyword: string, size?: number) {
+    const WebService = new this.service.WebService(this.ctx);
+    const result = await this.ctx.dbo.package.findAndCountAll({
+      attributes: ['pathname'],
+      where: {
+        name: {
+          [Op.like]: '%' + keyword + '%'
+        }
+      },
+      limit: 20,
+      offset: size
+    });
+    const total = result.count;
+    const names = result.rows.map(x => {
+      return this.getPackageInfo({ pathname: x.pathname }).then(data => WebService.fixUser(data).then(() => {
+        return {
+          name: data.name,
+          description: data.description,
+          maintainers: data.maintainers,
+          version: data.version,
+          _created: data._created
+        }})
+      )
+    });
+    const objects = await Promise.all(names);
+    return { objects, total, time: new Date() }
+  }
+
+  async searchFromNpm(keyword: string, size?: number) {
+    if (!keyword) throw new Error('search param need a string value');
+    if (!size) size = 0;
+    const WebService = new this.service.WebService(this.ctx);
+    return await new Promise((resolve, reject) => {
+      let url = `http://registry.npmjs.com/-/v1/search?text=${encodeURIComponent(keyword)}&from=${size}`;
+      request.get(url, (err: Error, response: request.Response, body: string) => {
+        if (err) return reject(err);
+        if (response.statusCode >= 300 || response.statusCode < 200) return reject(new Error(response.statusMessage));
+        const data = JSON.parse(body);
+        if (data.error) return reject(new Error(data.error));
+        const objects = data.objects.map((x: any) => {
+          const pkg = x.package;
+          WebService.fixRemoteMaintainers(pkg);
+          return {
+            name: pkg.name,
+            description: pkg.description,
+            maintainers: pkg.maintainers,
+            version: pkg.version,
+            _created: pkg.date
+          };
+        });
+        resolve({
+          objects,
+          total: data.total,
+          time: data.time
+        });
+      });
+    })
   }
 
   /**

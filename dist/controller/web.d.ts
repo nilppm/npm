@@ -6,4 +6,5 @@ export default class WebController extends Component.Controller {
     getUserWithPkgname(ctx: NPMContext): Promise<void>;
     getUserWithScopeAndPkgnameUseVersion(ctx: NPMContext): Promise<void>;
     getUserWithPkgnameUseVersion(ctx: NPMContext): Promise<void>;
+    searchPackages(ctx: NPMContext): Promise<void>;
 }

@@ -32,4 +32,16 @@ export default class WebController extends Component.Controller {
     const service = new this.service.WebService(ctx);
     ctx.body = await service.getPackage(ctx.params.pkgname, ctx.params.version);
   }
+
+  @Controller.Get('/search')
+  @Controller.Request.Static.Validator.Query('q', 's', 't')
+  async searchPackages(ctx: NPMContext) {
+    const service = new this.service.PackageService(ctx);
+    const t = Number(ctx.query.t);
+    switch (t) {
+      case 1: ctx.body = await service.searchFromDBO(ctx.query.q, Number(ctx.query.s)); break;
+      case 2: ctx.body = await service.searchFromNpm(ctx.query.q, Number(ctx.query.s)); break;
+      default: throw new Error('query.t can only be [1,2]');
+    }
+  }
 }

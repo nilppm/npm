@@ -111,6 +111,19 @@ export default class WebService extends Component.Service<NPMContext> {
     }
   }
 
+  fixRemoteMaintainers(result: any) {
+    if (result.maintainers && result.maintainers.length) {
+      result.maintainers = result.maintainers.map((maintainer: { username: string, email: string }) => {
+        return {
+          name: maintainer.username,
+          email: maintainer.email,
+          avatar: url(maintainer.email),
+          nick: maintainer.username,
+        }
+      });
+    }
+  }
+
   async formatUserAvatar(user: { name: string, email?: string }): Promise<{ name: string, email: string, avatar: string, nick: string }> {
     const UserService = new this.service.UserService(this.ctx);
     const _user = await UserService.userCache(user.name).get({ account: user.name });

@@ -9,6 +9,7 @@ export default class WebService extends Component.Service<NPMContext> {
     getNpmDownloadsApi(url: string): Promise<unknown>;
     fixRepo(result: any): void;
     fixUser(result: any): Promise<void>;
+    fixRemoteMaintainers(result: any): void;
     formatUserAvatar(user: {
         name: string;
         email?: string;

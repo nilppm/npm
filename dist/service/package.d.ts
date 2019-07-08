@@ -4,6 +4,12 @@ import { Component } from '@nelts/nelts';
 export default class PackageService extends Component.Service<NPMContext> {
     private configs;
     constructor(ctx: NPMContext);
+    searchFromDBO(keyword: string, size?: number): Promise<{
+        objects: any[];
+        total: number;
+        time: Date;
+    }>;
+    searchFromNpm(keyword: string, size?: number): Promise<unknown>;
     unPublish(filepath: string, rev: string): Promise<any>;
     clearPackage(pid: number): Promise<void>;
     removeAllByPid(pid: number): Promise<number>;
