@@ -189,7 +189,7 @@ $ npm update # 更新程序
 $ npm run restart # 重启服务
 ```
 
-# Web project
+# 主题
 
 前端界面项目在 [https://github.com/nilppm/web](https://github.com/nilppm/web)，你可以通过以下命令克隆项目
 
@@ -203,6 +203,32 @@ $ npm ci
 
 > 后续会增加自定义主题功能，您可以通过修改这个源码打包出文件，放到您项目的根目录下来替换官方主题。
 
+# 升级
+
+之前的版本[CPM](https://github.com/cevio/cpm)停止维护，您可以选择这个稳定版本，我们提供从CPM升级到Nilppm的方案。
+
+## 数据库
+
+```sql
+alter table maintainer ADD utime datetime NOT NULL;
+CREATE INDEX idx_account ON user (account);
+alter table version ADD mtime datetime NOT NULL;
+CREATE INDEX idx_rev ON version (rev);
+CREATE UNIQUE INDEX uq_pid_name ON version (`pid`, `name`);
+```
+
+请执行以上sql语句升级数据库
+
+## NFS 文件迁移
+
+之前我们存放的路径在
+
+```bash
+$ node
+$ process.env.HOME # /usr/local
+```
+
+那么我们将里面的文件 `/usr/local/packages/` 移动到当前项目下即可。
 
 # License
 

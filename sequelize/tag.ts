@@ -27,6 +27,13 @@ export default class TagTableModel extends Model {
       updatedAt: 'mtime',
       charset: 'utf8',
       collate: 'utf8_general_ci',
+      indexes: [
+        {
+          name: 'uq_pid_name',
+          unique: true,
+          fields: ['pid', 'name']
+        }
+      ]
     });
   }
 }
