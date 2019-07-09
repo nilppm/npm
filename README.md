@@ -9,6 +9,14 @@
 
 `NILPPM`程序基于[NELTS](https://github.com/nelts)架构实现，有着稳定的性能。感兴趣的小伙伴可以前往链接查看。
 
+# 前提
+
+Nilppm 依赖 [pm2](https://www.npmjs.com/package/pm2) 进程守护，请优先安装：
+
+```bash
+$ npm i -g pm2
+```
+
 # 快速安装
 
 您不必为安装烦恼，`NILPPM`提供最便捷的安装模式和升级模式，请跟着我们的步骤操作即可完成安装。
@@ -61,7 +69,6 @@ $ npm init
 
 ```bash
 $ npm i @nilppm/npm
-$ npm i -g pm2
 ```
 
 ## 第四步
