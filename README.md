@@ -190,7 +190,7 @@ $ npm run restart # 重启服务
 
 # Web project
 
-前端界面项目在`https://github.com/nilppm/web`，你可以通过以下命令克隆项目
+前端界面项目在 [https://github.com/nilppm/web](https://github.com/nilppm/web)，你可以通过以下命令克隆项目
 
 ```bash
 $ git clone https://github.com/nilppm/web
