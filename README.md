@@ -13,6 +13,18 @@
 
 您不必为安装烦恼，`NILPPM`提供最便捷的安装模式和升级模式，请跟着我们的步骤操作即可完成安装。
 
+```bash
+$ git clone git@github.com:nilppm/registry.git
+$ cd registry
+$ npm ci
+```
+
+> 依赖安装完毕请修改配置文件 `nilppm.config.js`。具体配置参数说明见`手动安装`文档。
+
+# 手动安装
+
+手动安装过程页非常方便，请按照以下步骤进行。
+
 ## 第一步
 
 确定您存放私有包的目录，比如我们存放在`/usr/local/nilppm`路径上。那么：
@@ -175,6 +187,20 @@ $ npm run stop # 停止
 $ npm update # 更新程序
 $ npm run restart # 重启服务
 ```
+
+# Web project
+
+前端界面项目在`https://github.com/nilppm/web`，你可以通过以下命令克隆项目
+
+```bash
+$ git clone https://github.com/nilppm/web
+$ npm ci
+```
+
+- `npm run dev` 调试开发
+- `npm run build` 打包。打包文件位于`dist`目录下。
+
+> 后续会增加自定义主题功能，您可以通过修改这个源码打包出文件，放到您项目的根目录下来替换官方主题。
 
 
 # License
