@@ -292,7 +292,7 @@ class PackageService extends nelts_1.Component.Service {
         if (sp.length === 2) {
             const scope = sp[0];
             if (this.configs.scopes.indexOf(scope) > -1) {
-                const pack = await this.getSinglePackageByPathname(pkg.pathname, 'ctime', 'mtime');
+                const pack = await this.getSinglePackageByPathname(pkg.pathname, 'id', 'ctime', 'mtime');
                 if (pack) {
                     await this.updatePackageCache(pack.id);
                     return await this.getLocalPackageByPid(pack.id, pack.ctime, pack.mtime, pkg.version);

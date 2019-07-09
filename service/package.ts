@@ -377,7 +377,7 @@ export default class PackageService extends Component.Service<NPMContext> {
     if (sp.length === 2) {
       const scope = sp[0];
       if (this.configs.scopes.indexOf(scope) > -1) {
-        const pack = await this.getSinglePackageByPathname(pkg.pathname, 'ctime', 'mtime');
+        const pack = await this.getSinglePackageByPathname(pkg.pathname, 'id', 'ctime', 'mtime');
         if (pack) {
           // 如果数据库存在这个包
           // 而缓存不存在
