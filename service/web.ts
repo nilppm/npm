@@ -124,7 +124,15 @@ export default class WebService extends Component.Service<NPMContext> {
     }
   }
 
-  async formatUserAvatar(user: { name: string, email?: string }): Promise<{ name: string, email: string, avatar: string, nick: string }> {
+  async formatUserAvatar(user?: { name: string, email?: string }): Promise<{ name: string, email: string, avatar: string, nick: string }> {
+    if (!user || !user.name) {
+      return {
+        name: 'unknow',
+        email: 'unknow@blank.com',
+        avatar: url('unknow@blank.com'),
+        nick: 'unknow',
+      }
+    }
     const UserService = new this.service.UserService(this.ctx);
     const _user = await UserService.userCache(user.name).get({ account: user.name });
     if (_user) {
