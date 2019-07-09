@@ -41,7 +41,8 @@ export default class VersionService extends Component.Service<NPMContext> {
     const result = await this.getVersionsByPid(pid, 'id', 'name', 'ctime', 'package', 'rev');
     const res: {[name: string]: any} = {};
     result.forEach(ret => {
-      const chunk = JSON.parse(ret.package);
+      const string = ret.package.indexOf('%7B%22') === 0 ? decodeURIComponent(ret.package) : ret.package;
+      const chunk = JSON.parse(string);
       if (ret.name !== chunk.version) return;
       chunk._created = ret.ctime;
       chunk._rev = ret.rev;
