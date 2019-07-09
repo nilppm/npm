@@ -1,11 +1,12 @@
 {
   "name": "@nilppm/npm",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": "Node's internal lightweight private package manager",
   "main": "dist/index.js",
   "bin": {
     "nilppm": "dist/bin.js"
   },
+  "source": "dist",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nilppm/npm.git"
@@ -32,6 +33,7 @@
     "@types/fs-extra": "^8.0.0",
     "@types/gravatar": "^1.8.0",
     "@types/request": "^2.48.1",
+    "@types/serve-static": "^1.13.2",
     "@types/through": "0.0.29",
     "@types/uuid": "^3.4.5",
     "cheerio": "^1.0.0-rc.3",
@@ -41,6 +43,7 @@
     "mysql2": "^1.6.5",
     "npm-api": "^1.0.0",
     "request": "^2.88.0",
+    "serve-static": "^1.14.1",
     "uuid": "^3.3.2"
   },
   "devDependencies": {

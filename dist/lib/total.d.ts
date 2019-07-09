@@ -6,5 +6,9 @@ export default function Total(ctx: NPMContext): Promise<{
         package: number;
         user: number;
         version: number;
+        download: number;
+        dayDownloads: any;
+        weekDownloads: any;
+        monthDownloads: any;
     };
 }>;

@@ -29,5 +29,14 @@ class StatisticsService extends nelts_1.Component.Service {
     async Month(pathname, version) {
         return await this.SomeDay(30, pathname, version);
     }
+    async SomeDownloads(day) {
+        return await this.ctx.sequelize.query(`
+      SELECT COUNT(id) AS downloads 
+      FROM statistics 
+      WHERE DATE_SUB(CURDATE(),INTERVAL ? DAY) <= DATE(ctime)`, {
+            replacements: [day],
+            type: sequelize_1.QueryTypes.SELECT
+        });
+    }
 }
 exports.default = StatisticsService;

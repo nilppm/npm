@@ -1,5 +1,8 @@
 import { WorkerPlugin, ContextError } from '@nelts/nelts';
 import { NPMContext } from './index';
+import * as serveStatic from 'serve-static';
+import * as path from 'path';
+import * as fs from 'fs';
 
 export default (plu: WorkerPlugin) => {
   
@@ -37,10 +40,17 @@ export default (plu: WorkerPlugin) => {
   });
 
   // 辅助请求拦截事件
-  plu.app.use(async (req, res, next) => {
-    console.log(` - [${req.method}] inComingRequest:`, req.url);
-    await next();
-  });
+  // plu.app.use(async (req, res, next) => {
+  //   console.log(` - [${req.method}] inComingRequest:`, req.url, req.headers);
+  //   await next();
+  // });
+
+  let staticDictionary = path.resolve(__dirname, 'static');
+  if (!fs.existsSync(staticDictionary)) staticDictionary = path.resolve(__dirname, '../static');
+
+  plu.app.use(serveStatic(staticDictionary, { 
+    'index': ['index.html', 'index.htm'] 
+  }));
 
   // npm prepare login data
   plu.on('NpmPrepareLogin', async (ctx: NPMContext, v: number) => {

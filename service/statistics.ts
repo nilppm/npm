@@ -31,4 +31,15 @@ export default class StatisticsService extends Component.Service<NPMContext> {
   async Month(pathname: string, version?: string) {
     return await this.SomeDay(30, pathname, version);
   }
+
+  async SomeDownloads(day: number) {
+    return await this.ctx.sequelize.query(`
+      SELECT COUNT(id) AS downloads 
+      FROM statistics 
+      WHERE DATE_SUB(CURDATE(),INTERVAL ? DAY) <= DATE(ctime)`, 
+    {
+      replacements: [day],
+      type: QueryTypes.SELECT
+    });
+  }
 }

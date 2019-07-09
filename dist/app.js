@@ -1,5 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const serveStatic = require("serve-static");
+const path = require("path");
+const fs = require("fs");
 exports.default = (plu) => {
     plu.on('props', async (configs) => await plu.getComponent('@nelts/orm').props({
         sequelize: configs.sequelize,
@@ -15,10 +18,12 @@ exports.default = (plu) => {
             };
         });
     });
-    plu.app.use(async (req, res, next) => {
-        console.log(` - [${req.method}] inComingRequest:`, req.url);
-        await next();
-    });
+    let staticDictionary = path.resolve(__dirname, 'static');
+    if (!fs.existsSync(staticDictionary))
+        staticDictionary = path.resolve(__dirname, '../static');
+    plu.app.use(serveStatic(staticDictionary, {
+        'index': ['index.html', 'index.htm']
+    }));
     plu.on('NpmPrepareLogin', async (ctx, v) => {
         if (typeof plu.configs.npmLogin === 'function') {
             await plu.configs.npmLogin(ctx, v);
