@@ -16,6 +16,7 @@
 ```bash
 $ git clone git@github.com:nilppm/registry.git
 $ cd registry
+$ rm -rf .git
 $ npm ci
 ```
 
