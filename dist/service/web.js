@@ -124,6 +124,14 @@ class WebService extends nelts_1.Component.Service {
         }
     }
     async formatUserAvatar(user) {
+        if (!user || !user.name) {
+            return {
+                name: 'unknow',
+                email: 'unknow@blank.com',
+                avatar: gravatar_1.url('unknow@blank.com'),
+                nick: 'unknow',
+            };
+        }
         const UserService = new this.service.UserService(this.ctx);
         const _user = await UserService.userCache(user.name).get({ account: user.name });
         if (_user) {

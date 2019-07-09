@@ -11,6 +11,7 @@ exports.default = (plu) => {
     }));
     plu.on('ContextStart', (ctx) => {
         ctx.on('error', (err) => {
+            console.error(err);
             ctx.status = err.status || 422;
             ctx.body = {
                 status: ctx.status,

@@ -10,7 +10,7 @@ export default class WebService extends Component.Service<NPMContext> {
     fixRepo(result: any): void;
     fixUser(result: any): Promise<void>;
     fixRemoteMaintainers(result: any): void;
-    formatUserAvatar(user: {
+    formatUserAvatar(user?: {
         name: string;
         email?: string;
     }): Promise<{

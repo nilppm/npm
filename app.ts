@@ -31,6 +31,7 @@ export default (plu: WorkerPlugin) => {
   // 请求级别错误容错处理
   plu.on('ContextStart', (ctx: NPMContext) => {
     ctx.on('error', (err: ContextError) => {
+      console.error(err);
       ctx.status = err.status || 422;
       ctx.body = {
         status: ctx.status,
