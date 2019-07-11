@@ -157,6 +157,45 @@ module.exports = {
 }
 ```
 
+我们内部使用举例额，可以适当参考下：
+
+```javascript
+{
+  // 当我们使用自定义用户体系的时候，
+  // 我们需要提供一个获取用户信息的接口
+  // 这个不是必须，是可选参数函数。
+  async getUserInfo(account) {
+    const user = await ajax.get('/api/user/' + account);
+    return {
+      account: user.account,
+      name: user.name,
+      email: user.email,
+      avatar: user.avatar,
+      scopes: ['@' + account, ...this.scopes],
+      extra: {
+        department: Number(user.department),
+        position: user.position,
+        mobile: user.mobile,
+        gender: Number(user.gender),
+        isleader: Number(user.isleader),
+        english_name: user.english_name,
+        telephone: user.telephone,
+        qr_code: user.qr_code,
+        alias: user.alias
+      }
+    }
+  },
+  
+  // 当我们使用自定义用户体系的时候，
+  // 我们需要提供一个验证用户是否为有效用户的接口
+  // 这个不是必须，是可选参数函数。
+  async userLogin(account, password){
+    await ajax.post('/api/user/cpm/login', { account, password });
+    return await this.getUserInfo(account);
+  },
+}
+```
+
 `sequelize` 不局限使用mysql，所以只要`sequelize`支持的数据库，我们都可以使用。
 
 ### configs.npmLogin(ctx: NPMContext, v: number): Promise<any>
