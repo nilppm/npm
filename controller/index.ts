@@ -29,7 +29,9 @@ export default Scope<WorkerPlugin>(app => {
 
     @Controller.Get('/metadata')
     async metadata(ctx: NPMContext) {
-      const project = require(app.env.startsWith('dev') ? '../package.json' : '../../package.json');
+      let pkgfile = path.resolve(__dirname, '../package.json');
+      if (!fs.existsSync(pkgfile)) pkgfile = path.resolve(__dirname, '../../package.json');
+      const project = require(pkgfile);
       if (Date.now() - CPM_TIME > 10 * 60 * 1000) {
         CPM_CACHE = await Total(ctx);
         CPM_TIME = Date.now();
