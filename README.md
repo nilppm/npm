@@ -92,8 +92,9 @@ $ npm i @nilppm/npm
 
 - `-m, --max <count>` 启动时候子进程个数。
 - `-p, --port <port>` 启动服务的端口。
+- `-l, --level <level>` 日志级别
 
-它是基于[PM2](https://www.npmjs.com/package/pm2)守护进程的，所以能够使用`PM2`的所有命令。
+它是基于[PM2](https://www.npmjs.com/package/pm2)守护进程的，所以能够使用`PM2`的所有命令。关于日志级别，请参考 [这里](https://github.com/nelts/nelts/blob/master/docs/introduction/dir.md#%E6%A0%B9%E7%9B%AE%E5%BD%95)
 
 ## 第五步
 
