@@ -15,6 +15,7 @@ Nilppm 依赖 [pm2](https://www.npmjs.com/package/pm2) 进程守护，请优先�
 
 ```bash
 $ npm i -g pm2
+$ pm2 install pm2-intercom
 ```
 
 # 快速安装
