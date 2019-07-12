@@ -11,6 +11,7 @@ program.command('start')
     .description('run server with pm2, env = production')
     .option('-m, --max <max>', 'how many process would you like to bootstrap', 0)
     .option('-p, --port <port>', 'which port do server run at?', 8080)
+    .option('-l, --level <level>', 'logger level?', 'debug')
     .action(start_1.default);
 program.command('restart')
     .description('restart the production server')

@@ -4,7 +4,8 @@ import * as fs from 'fs';
 
 export interface DevOptions {
   max: string | number,
-  port: string | number
+  port: string | number,
+  level?: string
 }
 
 export default function Start(options: DevOptions) {
@@ -26,6 +27,7 @@ export default function Start(options: DevOptions) {
   args.push(`--config=${config_path}`);
   if (options.max) args.push(`--max=${options.max}`);
   if (options.port) args.push(`--port=${options.port}`);
+  if (options.level) args.push(`--level=${options.level}`);
   
   exec('pm2', args, { env: 'production' }).then(() => process.exit(0));
 }

@@ -23,6 +23,8 @@ function Start(options) {
         args.push(`--max=${options.max}`);
     if (options.port)
         args.push(`--port=${options.port}`);
+    if (options.level)
+        args.push(`--level=${options.level}`);
     exec_1.default('pm2', args, { env: 'production' }).then(() => process.exit(0));
 }
 exports.default = Start;
