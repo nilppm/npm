@@ -55,7 +55,7 @@ export default class MaintainerService extends Component.Service<NPMContext> {
     }))) throw new Error('you have no right to use `add owner` commander');
     const oldMaintainers = databaseMaintainers.map(user => user.account);
     const newMaintainers = maintainers.map(user => user.name);
-    ver.package = JSON.parse(ver.package);
+    ver.package = ver.package.indexOf('%7B%22') === 0 ? JSON.parse(decodeURIComponent(ver.package)) : JSON.parse(ver.package);
     ver.package.maintainers = maintainers;
     const diff: intersectResult = intersect(oldMaintainers, newMaintainers);
     if (diff.adds.length) await Promise.all(diff.adds.map((account: string) => this.createNewMaintainer(account, pack.id)));

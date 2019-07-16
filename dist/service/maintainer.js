@@ -58,7 +58,7 @@ class MaintainerService extends nelts_1.Component.Service {
             throw new Error('you have no right to use `add owner` commander');
         const oldMaintainers = databaseMaintainers.map(user => user.account);
         const newMaintainers = maintainers.map(user => user.name);
-        ver.package = JSON.parse(ver.package);
+        ver.package = ver.package.indexOf('%7B%22') === 0 ? JSON.parse(decodeURIComponent(ver.package)) : JSON.parse(ver.package);
         ver.package.maintainers = maintainers;
         const diff = intersect_1.default(oldMaintainers, newMaintainers);
         if (diff.adds.length)
