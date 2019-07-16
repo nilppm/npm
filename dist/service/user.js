@@ -56,7 +56,7 @@ class UserService extends nelts_1.Component.Service {
             throw new Error('Cannot find user:' + account);
         return {
             _id: 'org.couchdb.user:' + user.account,
-            name: user.name,
+            name: user.account,
             email: user.email,
             type: 'user',
             avatar: user.avatar,

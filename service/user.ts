@@ -76,7 +76,7 @@ export default class UserService extends Component.Service<NPMContext> {
     if (!user) throw new Error('Cannot find user:' + account);
     return {
       _id: 'org.couchdb.user:' + user.account,
-      name: user.name,
+      name: user.account,
       email: user.email,
       type: 'user',
       avatar: user.avatar,
