@@ -1,6 +1,6 @@
 {
   "name": "@nilppm/npm",
-  "version": "1.0.29",
+  "version": "1.0.30",
   "description": "Node's internal lightweight private package manager",
   "main": "dist/index.js",
   "bin": {
@@ -12,7 +12,7 @@
     "url": "git+https://github.com/nilppm/npm.git"
   },
   "scripts": {
-    "dev": "nelts-server dev -m 1 -c nelts.config",
+    "dev": "nelts-server dev -m 1",
     "build": "rm -rf dist/ && tsc -d"
   },
   "keywords": [
@@ -26,7 +26,7 @@
   },
   "homepage": "https://github.com/nilppm/npm#readme",
   "dependencies": {
-    "@nelts/nelts": "^1.1.18",
+    "@nelts/nelts": "^1.1.19",
     "@nelts/orm": "^1.0.22",
     "@nelts/process": "^1.1.1",
     "@types/cheerio": "^0.22.12",
