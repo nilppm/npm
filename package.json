@@ -15,6 +15,10 @@
     "dev": "nelts-server dev -m 1",
     "build": "rm -rf dist/ && tsc -d"
   },
+  "files": [
+    "dist",
+    "static"
+  ],
   "keywords": [
     "template",
     "nelts"
