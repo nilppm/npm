@@ -1,6 +1,6 @@
 {
   "name": "@nilppm/npm",
-  "version": "1.0.28",
+  "version": "1.0.29",
   "description": "Node's internal lightweight private package manager",
   "main": "dist/index.js",
   "bin": {
@@ -26,7 +26,7 @@
   },
   "homepage": "https://github.com/nilppm/npm#readme",
   "dependencies": {
-    "@nelts/nelts": "^1.1.16",
+    "@nelts/nelts": "^1.1.18",
     "@nelts/orm": "^1.0.22",
     "@nelts/process": "^1.1.1",
     "@types/cheerio": "^0.22.12",
