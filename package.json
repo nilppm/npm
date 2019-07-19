@@ -6,7 +6,7 @@
   "bin": {
     "nilppm": "dist/bin.js"
   },
-  "source": "src",
+  "source": "dist",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nilppm/npm.git"
