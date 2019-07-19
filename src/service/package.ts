@@ -1,4 +1,4 @@
-import { NPMContext } from '../index';
+import { NPMContext, NPMWorkerPlugin } from '../index';
 import { Component, NELTS_CONFIGS } from '@nelts/nelts';
 import * as request from 'request';
 import { CacheableInterface } from '@nelts/orm';
@@ -9,7 +9,7 @@ import * as fse from 'fs-extra';
 import * as fs from 'fs';
 import { Op }  from 'sequelize';
 
-export default class PackageService extends Component.Service<NPMContext> {
+export default class PackageService extends Component.Service<NPMWorkerPlugin, NPMContext> {
   private configs: NELTS_CONFIGS;
   constructor(ctx: NPMContext) {
     super(ctx);

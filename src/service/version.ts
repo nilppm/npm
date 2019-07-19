@@ -1,4 +1,4 @@
-import { NPMContext } from '../index';
+import { NPMContext, NPMWorkerPlugin } from '../index';
 import { Component } from '@nelts/nelts';
 import { Cacheable } from '@nelts/orm';
 import { Op } from 'sequelize';
@@ -10,7 +10,7 @@ interface VersionCompareTree {
   max: number,
 }
 
-export default class VersionService extends Component.Service<NPMContext> {
+export default class VersionService extends Component.Service<NPMWorkerPlugin, NPMContext> {
   constructor(ctx: NPMContext) {
     super(ctx);
   }

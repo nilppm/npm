@@ -1,12 +1,12 @@
-import { NPMContext } from '../index';
-import { Component, Decorator, WorkerPlugin, Scope, Extra } from '@nelts/nelts';
+import { NPMContext, NPMWorkerPlugin } from '../index';
+import { Component, Decorator, Scope, Extra } from '@nelts/nelts';
 const Controller = Decorator.Controller;
 
 // Use scope function
-export default Scope<WorkerPlugin>(app => {
+export default Scope<NPMWorkerPlugin>(app => {
   @Controller.Prefix('/-/package')
-  class IndexController extends Component.Controller {
-    constructor(app: WorkerPlugin) {
+  class IndexController extends Component.Controller<NPMWorkerPlugin> {
+    constructor(app: NPMWorkerPlugin) {
       super(app);
     }
 

@@ -1,4 +1,4 @@
-import { NPMContext } from '../index';
+import { NPMContext, NPMWorkerPlugin } from '../index';
 import { Component, NELTS_CONFIGS, LRU } from '@nelts/nelts';
 import { url } from 'gravatar';
 import * as request from 'request';
@@ -7,7 +7,7 @@ const lru = new LRU(300);
 const NpmApi = require('npm-api');
 const npm = new NpmApi();
 
-export default class WebService extends Component.Service<NPMContext> {
+export default class WebService extends Component.Service<NPMWorkerPlugin, NPMContext> {
   private configs: NELTS_CONFIGS;
   constructor(ctx: NPMContext) {
     super(ctx);

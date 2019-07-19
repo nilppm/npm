@@ -1,2 +1,2 @@
-import { Context } from '@nelts/nelts';
-export default function decodePackageWithPkgname(ctx: Context, next: Function): Promise<void>;
+import { NPMContext } from '../../../index';
+export default function decodePackageWithPkgname(ctx: NPMContext, next: Function): Promise<void>;

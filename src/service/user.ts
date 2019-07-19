@@ -1,4 +1,4 @@
-import { NPMContext } from '../index';
+import { NPMContext, NPMWorkerPlugin } from '../index';
 import { Component, NELTS_CONFIGS } from '@nelts/nelts';
 import { Cacheable, CacheableInterface } from '@nelts/orm';
 
@@ -28,7 +28,7 @@ interface AddUserResponseData {
   rev: string,
 }
 
-export default class UserService extends Component.Service<NPMContext> {
+export default class UserService extends Component.Service<NPMWorkerPlugin, NPMContext> {
   private configs: NELTS_CONFIGS;
   constructor(ctx: NPMContext) {
     super(ctx);

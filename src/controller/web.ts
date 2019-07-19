@@ -1,11 +1,10 @@
-import { Component, Decorator, WorkerPlugin, Extra } from '@nelts/nelts';
-import { NPMContext } from '../index';
-import * as request from 'request';
+import { Component, Decorator } from '@nelts/nelts';
+import { NPMContext, NPMWorkerPlugin } from '../index';
 const Controller = Decorator.Controller;
 
 @Controller.Prefix('/api')
-export default class WebController extends Component.Controller {
-  constructor(app: WorkerPlugin) {
+export default class WebController extends Component.Controller<NPMWorkerPlugin> {
+  constructor(app: NPMWorkerPlugin) {
     super(app);
   }
 

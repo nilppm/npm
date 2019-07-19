@@ -1,8 +1,8 @@
-import { NPMContext } from '../index';
+import { NPMContext, NPMWorkerPlugin } from '../index';
 import { Component, NELTS_CONFIGS } from '@nelts/nelts';
 import { QueryTypes } from 'sequelize';
 
-export default class StatisticsService extends Component.Service<NPMContext> {
+export default class StatisticsService extends Component.Service<NPMWorkerPlugin, NPMContext> {
   private configs: NELTS_CONFIGS;
   constructor(ctx: NPMContext) {
     super(ctx);

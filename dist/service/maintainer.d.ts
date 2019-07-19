@@ -1,11 +1,11 @@
-import { NPMContext } from '../index';
+import { NPMContext, NPMWorkerPlugin } from '../index';
 import { Component } from '@nelts/nelts';
 declare type MaintainerData = {
     name: string;
     email?: string;
     account?: string;
 };
-export default class MaintainerService extends Component.Service<NPMContext> {
+export default class MaintainerService extends Component.Service<NPMWorkerPlugin, NPMContext> {
     private configs;
     constructor(ctx: NPMContext);
     removeAllByPid(pid: number): Promise<number>;

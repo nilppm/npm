@@ -1,4 +1,4 @@
-import { OrmContext } from '@nelts/orm';
+import { OrmContext, OrmWorkerPlugin } from '@nelts/orm';
 
 import MaintainerSequelize from './sequelize/maintainer';
 import PackageSequelize from './sequelize/package';
@@ -16,4 +16,5 @@ interface SequelizeItems {
   statistics: typeof StatisticsTableModel,
 }
 
-export type NPMContext = OrmContext<SequelizeItems>;
+export interface NPMWorkerPlugin extends OrmWorkerPlugin {};
+export interface NPMContext extends OrmContext<NPMWorkerPlugin, SequelizeItems> {};

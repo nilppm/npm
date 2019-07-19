@@ -1,6 +1,6 @@
-import { NPMContext } from '../index';
+import { NPMContext, NPMWorkerPlugin } from '../index';
 import { Component } from '@nelts/nelts';
-export default class VersionService extends Component.Service<NPMContext> {
+export default class VersionService extends Component.Service<NPMWorkerPlugin, NPMContext> {
     constructor(ctx: NPMContext);
     removeAllByPid(pid: number): Promise<number>;
     findLatestVersion(pid: number, ctime: Date): Promise<import("../sequelize/version").default>;

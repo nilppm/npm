@@ -42,7 +42,7 @@ exports.default = nelts_1.Scope(app => {
     ], UserController.prototype, "addUser", null);
     UserController = __decorate([
         Controller.Prefix('/-/user'),
-        __metadata("design:paramtypes", [nelts_1.WorkerPlugin])
+        __metadata("design:paramtypes", [Object])
     ], UserController);
     return UserController;
 });

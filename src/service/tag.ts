@@ -1,9 +1,9 @@
-import { NPMContext } from '../index';
+import { NPMContext, NPMWorkerPlugin } from '../index';
 import { Component, NELTS_CONFIGS } from '@nelts/nelts';
 import { Cacheable } from '@nelts/orm';
 import { Op } from 'sequelize';
 
-export default class TagService extends Component.Service<NPMContext> {
+export default class TagService extends Component.Service<NPMWorkerPlugin, NPMContext> {
   private configs: NELTS_CONFIGS;
   constructor(ctx: NPMContext) {
     super(ctx);

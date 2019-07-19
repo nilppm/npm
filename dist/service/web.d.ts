@@ -1,6 +1,6 @@
-import { NPMContext } from '../index';
+import { NPMContext, NPMWorkerPlugin } from '../index';
 import { Component } from '@nelts/nelts';
-export default class WebService extends Component.Service<NPMContext> {
+export default class WebService extends Component.Service<NPMWorkerPlugin, NPMContext> {
     private configs;
     constructor(ctx: NPMContext);
     getPackage(pathname: string, version?: string): Promise<any>;

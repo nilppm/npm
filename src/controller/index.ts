@@ -1,9 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { NPMContext } from '../index';
+import { NPMContext, NPMWorkerPlugin } from '../index';
 import Total from '../lib/total';
-import { Component, Decorator, WorkerPlugin, Scope, Extra, ContextError } from '@nelts/nelts';
+import { Component, Decorator, Scope, Extra, ContextError } from '@nelts/nelts';
 const Controller = Decorator.Controller;
 
 let CPM_CACHE: {[name: string]: any} = {};
@@ -20,10 +20,10 @@ let CPM_TIME = 0;
  */
 
 // Use scope function
-export default Scope<WorkerPlugin>(app => {
+export default Scope<NPMWorkerPlugin>(app => {
   @Controller.Prefix()
-  class IndexController extends Component.Controller {
-    constructor(app: WorkerPlugin) {
+  class IndexController extends Component.Controller<NPMWorkerPlugin> {
+    constructor(app: NPMWorkerPlugin) {
       super(app);
     }
 

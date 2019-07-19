@@ -1,4 +1,4 @@
-import { NPMContext } from '../index';
+import { NPMContext, NPMWorkerPlugin } from '../index';
 import { Component, NELTS_CONFIGS } from '@nelts/nelts';
 import { Cacheable, CacheableInterface } from '@nelts/orm';
 import intersect, { intersectResult } from '../lib/intersect';
@@ -9,7 +9,7 @@ type MaintainerData = {
   account?: string,
 }
 
-export default class MaintainerService extends Component.Service<NPMContext> {
+export default class MaintainerService extends Component.Service<NPMWorkerPlugin, NPMContext> {
   private configs: NELTS_CONFIGS;
   constructor(ctx: NPMContext) {
     super(ctx);

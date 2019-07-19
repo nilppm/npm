@@ -91,7 +91,7 @@ exports.default = nelts_1.Scope(app => {
     ], IndexController.prototype, "deletePackageDistTagsWithScopeAndPkgname", null);
     IndexController = __decorate([
         Controller.Prefix('/-/package'),
-        __metadata("design:paramtypes", [nelts_1.WorkerPlugin])
+        __metadata("design:paramtypes", [Object])
     ], IndexController);
     return IndexController;
 });

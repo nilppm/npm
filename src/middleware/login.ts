@@ -1,6 +1,6 @@
-import { Context } from '@nelts/nelts';
+import { NPMContext } from '../index';
 
-module.exports = async function UserLoginMiddleware(ctx: Context, next: Function) {
+module.exports = async function UserLoginMiddleware(ctx: NPMContext, next: Function) {
   const header = ctx.request.header;
   const authorization = header.authorization;
   if (!authorization) return NotLogined(ctx);
@@ -13,7 +13,7 @@ module.exports = async function UserLoginMiddleware(ctx: Context, next: Function
   await next();
 };
 
-function NotLogined(ctx: Context) {
+function NotLogined(ctx: NPMContext) {
   ctx.status = 401;
   throw new Error('Unauthorized, please login using `cpm login`');
 }

@@ -1,7 +1,7 @@
 /// <reference types="node" />
-import { NPMContext } from '../index';
+import { NPMContext, NPMWorkerPlugin } from '../index';
 import { Component } from '@nelts/nelts';
-export default class PackageService extends Component.Service<NPMContext> {
+export default class PackageService extends Component.Service<NPMWorkerPlugin, NPMContext> {
     private configs;
     constructor(ctx: NPMContext);
     searchFromDBO(keyword: string, size?: number): Promise<{

@@ -1,10 +1,10 @@
-import { WorkerPlugin, ContextError } from '@nelts/nelts';
-import { NPMContext } from './index';
+import { ContextError } from '@nelts/nelts';
+import { NPMContext, NPMWorkerPlugin } from './index';
 import * as serveStatic from 'serve-static';
 import * as path from 'path';
 import * as fs from 'fs';
 
-export default (plu: WorkerPlugin) => {
+export default (plu: NPMWorkerPlugin) => {
   
   // app.on('ServerStarted', () => console.log('nelts life [ServerStarted] invoked.'));
   // app.on('ServerStopping', () => console.log('nelts life [ServerStopping] invoked.'));
@@ -31,7 +31,7 @@ export default (plu: WorkerPlugin) => {
   // 请求级别错误容错处理
   plu.on('ContextStart', (ctx: NPMContext) => {
     ctx.on('error', (err: ContextError) => {
-      console.error(err);
+      ctx.logger.error(err);
       ctx.status = err.status || 422;
       ctx.body = {
         status: ctx.status,

@@ -1,6 +1,6 @@
-import { NPMContext } from '../index';
+import { NPMContext, NPMWorkerPlugin } from '../index';
 import { Component } from '@nelts/nelts';
-export default class TagService extends Component.Service<NPMContext> {
+export default class TagService extends Component.Service<NPMWorkerPlugin, NPMContext> {
     private configs;
     constructor(ctx: NPMContext);
     getTagsCache(pid: number): Promise<{

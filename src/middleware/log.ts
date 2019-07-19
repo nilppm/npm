@@ -1,5 +1,5 @@
-import { Context } from '@nelts/nelts';
-export default async function LoggerError(ctx: Context, next: Function) {
+import { NPMContext } from '../index';
+export default async function LoggerError(ctx: NPMContext, next: Function) {
   ctx.on('error', (err: Error) => console.error(err));
   await next();
 }

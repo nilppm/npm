@@ -1,3 +1,3 @@
-import { WorkerPlugin } from '@nelts/nelts';
-declare const _default: (plu: WorkerPlugin) => void;
+import { NPMWorkerPlugin } from './index';
+declare const _default: (plu: NPMWorkerPlugin) => void;
 export default _default;

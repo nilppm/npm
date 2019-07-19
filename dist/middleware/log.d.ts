@@ -1,2 +1,2 @@
-import { Context } from '@nelts/nelts';
-export default function LoggerError(ctx: Context, next: Function): Promise<void>;
+import { NPMContext } from '../index';
+export default function LoggerError(ctx: NPMContext, next: Function): Promise<void>;

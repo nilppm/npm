@@ -1,4 +1,4 @@
-import { NPMContext } from '../index';
+import { NPMContext, NPMWorkerPlugin } from '../index';
 import { Component } from '@nelts/nelts';
 export interface UserInfo {
     account: string;
@@ -23,7 +23,7 @@ interface AddUserResponseData {
     id: string;
     rev: string;
 }
-export default class UserService extends Component.Service<NPMContext> {
+export default class UserService extends Component.Service<NPMWorkerPlugin, NPMContext> {
     private configs;
     constructor(ctx: NPMContext);
     userCache(account: string): Promise<any>;

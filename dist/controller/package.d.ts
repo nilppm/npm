@@ -1,6 +1,6 @@
-import { WorkerPlugin } from '@nelts/nelts';
+import { NPMWorkerPlugin } from '../index';
 declare const _default: {
-    (plugin: WorkerPlugin): Function;
+    (plugin: NPMWorkerPlugin): Function;
     scoped: boolean;
 };
 export default _default;

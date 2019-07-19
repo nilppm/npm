@@ -78,6 +78,6 @@ __decorate([
 ], WebController.prototype, "searchPackages", null);
 WebController = __decorate([
     Controller.Prefix('/api'),
-    __metadata("design:paramtypes", [nelts_1.WorkerPlugin])
+    __metadata("design:paramtypes", [Object])
 ], WebController);
 exports.default = WebController;
