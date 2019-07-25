@@ -30,9 +30,9 @@
   },
   "homepage": "https://github.com/nilppm/npm#readme",
   "dependencies": {
-    "@nelts/nelts": "^1.1.21",
+    "@nelts/nelts": "^1.1.30",
     "@nelts/orm": "^1.0.25",
-    "@nelts/process": "^1.1.1",
+    "@nelts/process": "^1.1.6",
     "@types/cheerio": "^0.22.12",
     "@types/fs-extra": "^8.0.0",
     "@types/gravatar": "^1.8.0",
