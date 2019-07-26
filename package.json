@@ -1,6 +1,6 @@
 {
   "name": "@nilppm/npm",
-  "version": "1.1.3",
+  "version": "1.1.4",
   "description": "Node's internal lightweight private package manager",
   "main": "dist/index.js",
   "bin": {
@@ -20,8 +20,13 @@
     "static"
   ],
   "keywords": [
-    "template",
-    "nelts"
+    "nelts",
+    "npm",
+    "cluster",
+    "registry",
+    "api",
+    "npm-api",
+    "cli"
   ],
   "author": "cevio",
   "license": "MIT",
@@ -30,7 +35,7 @@
   },
   "homepage": "https://github.com/nilppm/npm#readme",
   "dependencies": {
-    "@nelts/nelts": "^1.1.30",
+    "@nelts/nelts": "^1.1.34",
     "@nelts/orm": "^1.0.25",
     "@nelts/process": "^1.1.6",
     "@types/cheerio": "^0.22.12",
